@@ -1,3 +1,22 @@
+# Folders
+.vscode/
+GitHub/
+temp/
+tmp/
+
+# Special files
+tmp.txt
+
+# Others
+*.xlsx
+
+# Pickle: Create portable serialized representations of Python objects.
+*.pkl
+
+#
+# ============================== Python.gitignore ==============================
+#
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
