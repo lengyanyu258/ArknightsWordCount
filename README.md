@@ -38,7 +38,7 @@ python .\main.py -h
 
 ## 贡献
 
-`config.py` 中的 `merge_names` 内容仍需要建设，欢迎大家参与！
+[`config.py`](https://github.com/lengyanyu258/ArknightsWordCount/blob/main/config.py) 中的 `merge_names` 内容仍需要建设，欢迎大家参与！
 
 ## 其他
 
