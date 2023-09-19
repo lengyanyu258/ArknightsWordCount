@@ -30,7 +30,6 @@ def main():
             "文档日期": f"{datetime.date.today():%Y-%m-%d}",
             # "程序作者": config.info["authors"],
             "程序地址": "https://github.com/lengyanyu258/ArknightsWordCount",
-            "专栏地址": "https://www.bilibili.com/read/cv24618152/",
         },
     }
     game_data.dump(info, config.dump.FONT_NAME)
