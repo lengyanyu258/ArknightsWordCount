@@ -18,11 +18,15 @@ def main():
     if args.count:
         game_data.count()
 
+    data_date = (
+        game_data._data_version_path.read_text(encoding="utf-8").split()[-2].strip()
+    )
     info = {
         "title": config.info["description"],
         "data": {
             "程序版本": config.info["version"],
             "数据版本": game_data.data["excel"]["gamedata_const"]["dataVersion"],
+            "数据日期": data_date.replace("/", "-"),
             "文档日期": f"{datetime.date.today():%Y-%m-%d}",
             # "程序作者": config.info["authors"],
             "程序地址": "https://github.com/lengyanyu258/ArknightsWordCount",
