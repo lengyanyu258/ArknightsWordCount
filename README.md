@@ -25,7 +25,7 @@
 需安装 Python 包管理器：[Poetry](https://python-poetry.org/docs/#installation)
 
 ```powershell
-git clone --depth=1 https://github.com/lengyanyu258/ArknightsWordCount.git
+git clone --depth=1 "https://github.com/lengyanyu258/ArknightsWordCount.git"
 
 cd .\ArknightsWordCount\
 
@@ -36,16 +36,6 @@ poetry install
 python .\main.py -h
 ```
 
-## 贡献
-
-[`config.py`](https://github.com/lengyanyu258/ArknightsWordCount/blob/main/config.py) 中的 `merge_names` 内容仍需要建设，欢迎大家参与！
-
 ## 其他
 
-- 获取 Excel 表格：
-
-  蓝奏云（无需登录注册，直接下载）网盘文件夹地址：
-  
-  链接：<https://lengyanyu258.lanzoub.com/b04winecj>
-  
-  密码：awc
+[`config.py`](https://github.com/lengyanyu258/ArknightsWordCount/blob/main/config.py) 中的 `merge_names` 内容仍需要建设，欢迎大家参与！
