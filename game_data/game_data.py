@@ -153,14 +153,16 @@ class GameData(Count, Dump):
 
         self._info("done.", end=True)
 
-    def dump(self, info: dict, font_name: str):
+    def dump(self, info: dict, font_name: str) -> Path:
         self._info("start dumping...")
 
         import platform
 
         if platform.system().lower() in ["windows", "darwin"]:
-            self.gen_excel(info, font_name)
+            dump_file = self.gen_excel(info, font_name)
         else:
-            self.gen_csv()
+            dump_file = self.gen_csv()
 
         self._info("done.", end=True)
+
+        return dump_file

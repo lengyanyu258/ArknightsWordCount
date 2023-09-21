@@ -8,9 +8,10 @@ __pyproject: dict[str, dict] = __tomllib.loads(
 info: dict = __pyproject["tool"]["poetry"]
 DATA_DIR = r"./Github/ArknightsGameData/zh_CN/gamedata"
 PICKLE_PATH = r"./tmp/Arknights_Word_Count.pkl"
+XLSX_PATH = r"./docs/Arknights_Word_Count.xlsx"
 
 
-class dump:
+class Dump:
     FONT_NAME = "Sarasa Mono Slab SC"
 
     merge_names = [

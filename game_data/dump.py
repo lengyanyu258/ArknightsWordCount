@@ -289,7 +289,7 @@ class Dump(Data):
                 self.__sheet_detail_list.append([""] * tab_time + [f"'{key}"])
                 self.__gen_detail_data(tab_time + 1, items_dict[key])
 
-    def gen_excel(self, info: dict, font_name: str):
+    def gen_excel(self, info: dict, font_name: str) -> Path:
         import xlwings as xw
 
         sheets_detail_dict = {}
@@ -456,6 +456,8 @@ class Dump(Data):
             book.save(self.__xlsx_file)
             self._info("Done.", end=True)
 
+        return self.__xlsx_file
+
     def __get_data(self, output_txt: str, dic: dict, tab_time: int) -> str:
         info_keys = list(dic["info"].keys())
         info_keys.remove("counter")
@@ -501,7 +503,7 @@ class Dump(Data):
                         output_txt += f"{',' * (3 - tab_time)}{txt}"
         return output_txt
 
-    def gen_csv(self):
+    def gen_csv(self) -> Path:
         output_txt = self.__get_data("", self.data["count"], 0)
 
         if self.__show_total:
@@ -549,3 +551,5 @@ class Dump(Data):
                 output_txt += f",{index + 1},{item[0]},{item[1]['words']},{item[1]['punctuation']}\n"
 
         self.__csv_file.write_text(output_txt)
+
+        return self.__csv_file

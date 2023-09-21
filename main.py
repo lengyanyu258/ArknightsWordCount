@@ -4,12 +4,13 @@ from game_data import GameData
 
 def main():
     import datetime
+    from pathlib import Path
 
     game_data = GameData(
         data_dir,
         pickle_file=config.PICKLE_PATH,
-        merge_names=config.dump.merge_names,
-        known_commands=config.dump.known_commands,
+        merge_names=config.Dump.merge_names,
+        known_commands=config.Dump.known_commands,
         args=args,
     )
 
@@ -32,7 +33,11 @@ def main():
             "程序地址": "https://github.com/lengyanyu258/ArknightsWordCount",
         },
     }
-    game_data.dump(info, config.dump.FONT_NAME)
+    dump_file = game_data.dump(info, config.Dump.FONT_NAME)
+    if args.publish:
+        published_file = Path(config.XLSX_PATH)
+        published_file.unlink(True)
+        published_file.hardlink_to(dump_file)
 
 
 if __name__ == "__main__":
@@ -76,6 +81,12 @@ if __name__ == "__main__":
         "--style",
         action="store_true",
         help="Setting style in excel file.",
+    )
+    switch.add_argument(
+        "-p",
+        "--publish",
+        action="store_true",
+        help="Save excel file to docs directory.",
     )
     switch.add_argument(
         "-ci",
