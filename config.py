@@ -33,6 +33,8 @@ class Dump:
         ("陈晖洁", "陈"),
     ]
 
+
+class Count:
     known_commands = [
         "AddItem",
         "background",

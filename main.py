@@ -9,8 +9,8 @@ def main():
     game_data = GameData(
         data_dir,
         pickle_file=config.PICKLE_PATH,
-        merge_names=config.Dump.merge_names,
-        known_commands=config.Dump.known_commands,
+        count_config_object=config.Count,
+        dump_config_object=config.Dump,
         args=args,
     )
 

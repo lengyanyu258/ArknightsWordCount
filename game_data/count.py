@@ -10,14 +10,14 @@ from .parse import Parse
 class Count(Parse):
     def __init__(
         self,
-        known_commands: list[str],
+        config_object,
         unknown: dict[str, list[str]],
         output_template_file: Path,
         args: Namespace,
     ):
         Parse.__init__(
             self,
-            known_commands=known_commands,
+            known_commands=config_object.known_commands,
             unknown=unknown,
             args=args,
         )

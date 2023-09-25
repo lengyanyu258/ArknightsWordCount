@@ -81,18 +81,18 @@ class Dump(Data):
 
     def __init__(
         self,
-        merge_names: list[list[str]],
+        config_object,
         output_template_file: Path,
         args: Namespace,
     ):
-        self.__merge_names = merge_names
+        self.__merge_names: list[list[str]] = config_object.merge_names
 
         today = f"{datetime.date.today():%Y%m%d}"
         file_name = f"{output_template_file.stem}_{today}"
         self.__xlsx_file = output_template_file.with_name(f"{file_name}.xlsx")
         self.__csv_file = output_template_file.with_name(f"{file_name}.csv")
 
-        self.__style: bool = args.style
+        self.__style: bool = args.style or args.publish
         self.__show_counter: bool = args.show_counter
         self.__show_total: bool = args.show_total
 
