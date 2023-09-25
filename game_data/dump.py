@@ -3,6 +3,7 @@ import math
 import datetime
 from pathlib import Path
 from argparse import Namespace
+from itertools import product
 
 from .data import Data
 
@@ -85,6 +86,9 @@ class Dump(Data):
         output_template_file: Path,
         args: Namespace,
     ):
+        self.__name_prefix: list[str] = config_object.name_prefix
+        self.__name_suffix: list[str] = config_object.name_suffix
+        self.__erase_names: list[str] = config_object.erase_names
         self.__merge_names: list[list[str]] = config_object.merge_names
 
         today = f"{datetime.date.today():%Y%m%d}"
@@ -92,6 +96,7 @@ class Dump(Data):
         self.__xlsx_file = output_template_file.with_name(f"{file_name}.xlsx")
         self.__csv_file = output_template_file.with_name(f"{file_name}.csv")
 
+        self.__debug: bool = args.debug
         self.__style: bool = args.style or args.publish
         self.__show_counter: bool = args.show_counter
         self.__show_total: bool = args.show_total
@@ -100,8 +105,10 @@ class Dump(Data):
         return [idx for idx, value in enumerate(list_to_check) if value == item_to_find]
 
     def __merge_counter_dict(self, counter: dict):
-        origin_names = list(counter.keys())
-        for origin_name in origin_names:
+        for origin_name in list(counter.keys()):
+            if self.__debug and "的" in origin_name:
+                print("preffix:", origin_name)
+
             names = re.split(self.__split_pattern, origin_name)
             if len(names) > 1:
                 for name in names:
@@ -112,19 +119,59 @@ class Dump(Data):
                         counter[name] = counter[origin_name]
                 del counter[origin_name]
 
-        counter_dict: dict[str, dict[str, int]] = {}
+        origin_names = list(counter.keys())
+        merged_names: list[list[str]] = []
+        self.__name_prefix.append("")
+        self.__name_suffix.append("")
+        name_prefixes = set(self.__name_prefix)
+        name_suffixes = set(self.__name_suffix)
+
+        # 扩增并过滤单个名称
         for person in self.__merge_names:
-            sorted_person = sorted(person, key=lambda name: len(name))
-            merged_name = "/".join(sorted_person)
+            names = set()
+            for name in person:
+                for i in product(name_prefixes, [name], name_suffixes):
+                    new_name = "".join(i)
+                    if new_name in origin_names:
+                        names.add(new_name)
+            if len(names) > 1:
+                merged_names.append(list(names))
+                for new_name in names:
+                    origin_names.remove(new_name)
+
+        # 扩增名称
+        for origin_name in origin_names[:]:
+            names = []
+            for i in product(name_prefixes, [origin_name], name_suffixes):
+                new_name = "".join(i)
+                if new_name in origin_names:
+                    names.append(new_name)
+            if len(names) > 1:
+                merged_names.append(names)
+                for new_name in names:
+                    origin_names.remove(new_name)
+
+        # 排除名称
+        for names in merged_names[:]:
+            for name in names[:]:
+                if name in self.__erase_names:
+                    names.remove(name)
+            if len(names) == 1:
+                merged_names.remove(names)
+
+        # 合并名称
+        counter_dict: dict[str, dict[str, int]] = {}
+        for names in merged_names:
+            merged_name = "/".join(sorted(names, key=lambda name: len(name)))
             counter_dict[merged_name] = {
                 "words": 0,
                 "punctuation": 0,
             }
-            for name in person:
-                if name in counter:
-                    for key in counter[name]:
-                        counter_dict[merged_name][key] += counter[name][key]
-                    del counter[name]
+            for name in names:
+                for key in counter[name]:
+                    counter_dict[merged_name][key] += counter[name][key]
+                del counter[name]
+            # 过滤掉 Word 与 Punctuation 为 0 的名字
             if sum(counter_dict[merged_name].values()) > 0:
                 counter[merged_name] = counter_dict[merged_name]
 
