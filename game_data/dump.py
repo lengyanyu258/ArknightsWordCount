@@ -244,29 +244,28 @@ class Dump(Data):
     def __gen_simple_data(
         self, sheet_simple_list: list, dic: dict[str, dict[str, dict[str, dict]]]
     ):
+        def append_list(index: str, info_dict: dict):
+            content_bar = [
+                info_dict[key] if key in dic["info"] else "" for key in keys_list
+            ]
+            sheet_simple_list.append(
+                [""] + [f"'{index}"] + [f"'{content_bar[0]}"] + content_bar[1:]
+            )
+
         keys_list = ["name", "words", "punctuation", "commands"]
         title_bar = [key.title() for key in keys_list]
-        content_bar = [
-            dic["info"][key] if key in dic["info"] else "" for key in keys_list
-        ]
         sheet_simple_list[-1] += [""] + title_bar
-        sheet_simple_list.append([""] * 2 + content_bar)
+        append_list("", dic["info"])
 
         for item_key, item in dic["items"].items():
             sheet_simple_list.append([])
             sheet_simple_list.append([f"'{item_key}"] + [""] + title_bar)
 
             if len(item["items"]) > 1:
-                content_bar = [
-                    item["info"][key] if key in dic["info"] else "" for key in keys_list
-                ]
-                sheet_simple_list.append([""] * 2 + content_bar)
+                append_list("", item["info"])
 
             for k, i in item["items"].items():
-                content_bar = [
-                    i["info"][key] if key in dic["info"] else "" for key in keys_list
-                ]
-                sheet_simple_list.append([""] + [f"'{k}"] + content_bar)
+                append_list(k, i["info"])
 
     def __gen_detail_data(self, tab_time: int, dic: dict[str, dict]):
         info_dict: dict = dic["info"]
@@ -329,7 +328,7 @@ class Dump(Data):
                 else:
                     storys_overview_dict["items"][story_key] = story_dict
         else:
-            sheet_overview_list = [["Merged Commands"]]
+            sheet_overview_list = [["Merged"]]
             self.__gen_overview_data(
                 sheet_overview_list, storys_overview_dict, "commands"
             )
@@ -399,7 +398,7 @@ class Dump(Data):
                                 XlLineStyle.xlContinuous
                             )
 
-                        if "Commands" in str(sheet_overview[y - 1, x].value):
+                        if "Merged" in str(sheet_overview[y - 1, x].value):
                             commands_range = sheet_overview[:, x + 4]
                             commands_range.api.Font.Bold = True
                         else:
