@@ -214,7 +214,7 @@ class Dump(Data):
                 "Index",
                 "Name",
                 "Words",
-                "Punctuation",
+                self.__PUNCTUATION,
             ]
         )
         sorted_counter_items = sorted(
