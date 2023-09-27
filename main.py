@@ -33,7 +33,7 @@ def main():
             "程序地址": "https://github.com/lengyanyu258/ArknightsWordCount",
         },
     }
-    dump_file = game_data.dump(info, config.Dump.FONT_NAME)
+    dump_file = game_data.dump(info)
     if args.publish:
         published_file = Path(config.XLSX_PATH)
         published_file.unlink(True)

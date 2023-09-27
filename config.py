@@ -14,8 +14,11 @@ XLSX_PATH = r"./docs/Arknights_Word_Count.xlsx"
 class Dump:
     FONT_NAME = "Sarasa Mono Slab SC"
 
+    # 名称前缀
     name_prefix = ["发言人", "审判官", "大审判官", "小"]
+    # 名称后缀
     name_suffix = ["骑士", "？"]
+    # 排除合并后的名称
     erase_names = ["小黑", "教宗骑士", "感染者骑士"]
     merge_names = [
         ("？？？？？", "？？？", "？"),

@@ -86,6 +86,7 @@ class Dump(Data):
         output_template_file: Path,
         args: Namespace,
     ):
+        self.__FONT_NAME: str = config_object.FONT_NAME
         self.__name_prefix: list[str] = config_object.name_prefix
         self.__name_suffix: list[str] = config_object.name_suffix
         self.__erase_names: list[str] = config_object.erase_names
@@ -335,7 +336,7 @@ class Dump(Data):
                 self.__sheet_detail_list.append([""] * tab_time + [f"'{key}"])
                 self.__gen_detail_data(tab_time + 1, items_dict[key])
 
-    def gen_excel(self, info: dict, font_name: str) -> Path:
+    def gen_excel(self, info: dict) -> Path:
         import xlwings as xw
 
         sheets_detail_dict = {}
@@ -418,7 +419,7 @@ class Dump(Data):
 
                 # 设置字体，耗时操作
                 for sheet in book.sheets:
-                    sheet.cells.font.name = font_name
+                    sheet.cells.font.name = self.__FONT_NAME
                 # 先设置字体大小，会在 autofit() 时计算宽度
                 sheet_overview.cells.font.size = 14
 
