@@ -18,8 +18,8 @@ class GameData(Count, Dump):
         self,
         data_dir: str,
         pickle_file: str,
-        count_config_object,
-        dump_config_object,
+        count_config: Namespace,
+        dump_config: Namespace,
         args: Namespace,
     ):
         data_dir_path = Path(data_dir)
@@ -30,14 +30,14 @@ class GameData(Count, Dump):
 
         Count.__init__(
             self=self,
-            config_object=count_config_object,
+            config=count_config,
             unknown=self.__unknown,
             output_template_file=self.__pickle_path,
             args=args,
         )
         Dump.__init__(
             self=self,
-            config_object=dump_config_object,
+            config=dump_config,
             output_template_file=self.__pickle_path,
             args=args,
         )

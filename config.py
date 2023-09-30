@@ -1,5 +1,6 @@
-from pathlib import Path as __Path
 import tomllib as __tomllib
+from pathlib import Path as __Path
+from argparse import Namespace as __Namespace
 
 __pyproject: dict[str, dict] = __tomllib.loads(
     __Path(__file__).with_name("pyproject.toml").read_text(encoding="utf-8")
@@ -10,24 +11,22 @@ DATA_DIR = r"./Github/ArknightsGameData/zh_CN/gamedata"
 PICKLE_PATH = r"./tmp/Arknights_Word_Count.pkl"
 XLSX_PATH = r"./docs/Arknights_Word_Count.xlsx"
 
-
-class Dump:
-    FONT_NAME = "Sarasa Mono Slab SC"
-
+dump_config = __Namespace(
+    FONT_NAME="Sarasa Mono Slab SC",
     # 名称前缀
-    name_prefix = ["发言人", "审判官", "大审判官", "小"]
+    name_prefix=["发言人", "审判官", "大审判官", "小"],
     # 名称后缀
-    name_suffix = ["骑士", "？"]
+    name_suffix=["骑士", "？"],
     # 排除合并后的名称
-    erase_names = ["小黑", "教宗骑士", "感染者骑士"]
-    merge_names = [
+    erase_names=["小黑", "小游客", "小村民", "教宗骑士", "感染者骑士"],
+    # 合并名称
+    merge_names=[
         ("？？？？？", "？？？", "？"),
         ("“焰尾”索娜", "“焰尾”", "焰尾", "索娜"),
         ("伊万杰利斯塔十一世", "教宗"),
         ("博士", "Dr."),
         ("埃尼斯", "苍苔"),  # 代号尚未在剧情中出现
         ("塞诺蜜", "砾"),
-        ("审判官艾丽妮", "艾丽妮"),
         ("微光守夜人", "不叫微光守夜人的黎博利", "菲亚梅塔"),
         ("恩希欧迪斯", "银灰"),
         ("无言的达里奥", "达里奥"),
@@ -36,11 +35,11 @@ class Dump:
         ("祖玛玛", "森蚺"),
         ("阿黛尔", "艾雅法拉"),
         ("陈晖洁", "陈"),
-    ]
+    ],
+)
 
-
-class Count:
-    known_commands = [
+count_config = __Namespace(
+    known_commands=[
         "AddItem",
         "background",
         "Background",
@@ -140,3 +139,4 @@ class Count:
         "Video",
         "withdraw",
     ]
+)

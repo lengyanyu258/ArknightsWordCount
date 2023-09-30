@@ -82,15 +82,15 @@ class Dump(Data):
 
     def __init__(
         self,
-        config_object,
+        config: Namespace,
         output_template_file: Path,
         args: Namespace,
     ):
-        self.__FONT_NAME: str = config_object.FONT_NAME
-        self.__name_prefix: list[str] = config_object.name_prefix
-        self.__name_suffix: list[str] = config_object.name_suffix
-        self.__erase_names: list[str] = config_object.erase_names
-        self.__merge_names: list[list[str]] = config_object.merge_names
+        self.__FONT_NAME: str = config.FONT_NAME
+        self.__name_prefix: list[str] = config.name_prefix
+        self.__name_suffix: list[str] = config.name_suffix
+        self.__erase_names: list[str] = config.erase_names
+        self.__merge_names: list[list[str]] = config.merge_names
 
         today = f"{datetime.date.today():%Y%m%d}"
         file_name = f"{output_template_file.stem}_{today}"
