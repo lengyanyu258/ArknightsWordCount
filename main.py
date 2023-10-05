@@ -9,7 +9,7 @@ def main():
 
     game_data = GameData(
         data_dir,
-        pickle_file=config.PICKLE_PATH,
+        config=config.game_data_config,
         count_config=config.count_config,
         dump_config=config.dump_config,
         args=args,
@@ -36,7 +36,7 @@ def main():
     }
     dump_file = game_data.dump(info)
     if args.publish:
-        published_file = Path(config.XLSX_PATH)
+        published_file = Path(config.xlsx_file)
         published_file.unlink(missing_ok=True)
         published_file.hardlink_to(target=dump_file)
 

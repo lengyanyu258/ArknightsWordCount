@@ -8,12 +8,15 @@ __pyproject: dict[str, dict] = __tomllib.loads(
 )
 
 info: dict[str, __t.Any] = __pyproject["tool"]["poetry"]
+__filename: str = info["name"]
 DATA_DIR = r"./Github/ArknightsGameData/zh_CN/gamedata"
-PICKLE_PATH = r"./tmp/Arknights_Word_Count.pkl"
-XLSX_PATH = r"./docs/Arknights_Word_Count.xlsx"
+xlsx_file = f"./docs/{__filename}.xlsx"
+
+game_data_config = __Namespace(pickle_file=f"./tmp/{__filename}.pkl")
 
 dump_config = __Namespace(
     FONT_NAME="Sarasa Mono Slab SC",
+    output_file=game_data_config.pickle_file,
     # 名称前缀
     name_prefix=["发言人", "审判官", "大审判官", "小"],
     # 名称后缀
@@ -37,8 +40,10 @@ dump_config = __Namespace(
         ("玛嘉烈", "临光"),
         ("玛莉娅", "瑕光"),
         ("祖玛玛", "森蚺"),
+        ("艾沃娜", "野鬃"),
         ("莱昂图索", "伺夜"),
         ("费德里科", "送葬人"),
+        ("费斯特", "白铁"),
         ("里凯莱", "隐现"),
         ("阿芙朵嘉", "鸿雪"),
         ("阿赫茉妮", "和弦"),
@@ -48,6 +53,7 @@ dump_config = __Namespace(
 )
 
 count_config = __Namespace(
+    output_file=game_data_config.pickle_file,
     # TODO: use lower case
     known_commands=[
         "AddItem",
@@ -148,5 +154,5 @@ count_config = __Namespace(
         "verticalbg",
         "Video",
         "withdraw",
-    ]
+    ],
 )

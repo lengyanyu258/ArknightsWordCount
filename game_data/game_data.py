@@ -17,7 +17,7 @@ class GameData(Count, Dump):
     def __init__(
         self,
         data_dir: str,
-        pickle_file: str,
+        config: Namespace,
         count_config: Namespace,
         dump_config: Namespace,
         args: Namespace,
@@ -26,27 +26,25 @@ class GameData(Count, Dump):
         if not data_dir_path.is_dir():
             raise NotADirectoryError(f"{data_dir_path.absolute()} is not a directory!")
 
-        self.__pickle_path = Path(pickle_file)
+        self.__pickle_file = Path(config.pickle_file)
 
         Count.__init__(
             self=self,
             config=count_config,
             unknown=self.__unknown,
-            output_template_file=self.__pickle_path,
             args=args,
         )
         Dump.__init__(
             self=self,
             config=dump_config,
-            output_template_file=self.__pickle_path,
             args=args,
         )
 
-        self.__unknown_files_file = self.__pickle_path.with_name(
-            f"{self.__pickle_path.stem}_unknown_files.txt"
-        )
-
         self.__debug: bool = args.debug
+
+        self.__unknown_files_file = self.__pickle_file.with_name(
+            f"{self.__pickle_file.stem}_unknown_files.txt"
+        )
 
         excel_dir = data_dir_path / "excel"
         self.__story_dir = data_dir_path / "story"
@@ -70,10 +68,10 @@ class GameData(Count, Dump):
     def __load_data(self):
         self._info("loading...")
 
-        if self.__pickle_path.exists():
-            self.data = pickle.loads(self.__pickle_path.read_bytes())
-        elif not self.__pickle_path.parent.exists():
-            self.__pickle_path.parent.mkdir(parents=True)
+        if self.__pickle_file.exists():
+            self.data = pickle.loads(self.__pickle_file.read_bytes())
+        elif not self.__pickle_file.parent.exists():
+            self.__pickle_file.parent.mkdir(parents=True)
 
         data_version: str = (
             self._data_version_path.read_text(encoding="utf-8").split(":")[-1].strip()
@@ -149,7 +147,7 @@ class GameData(Count, Dump):
         self._info("counting words...")
 
         self.count_words()
-        self.__pickle_path.write_bytes(pickle.dumps(self.data))
+        self.__pickle_file.write_bytes(pickle.dumps(self.data))
 
         self._info("done.", end=True)
 

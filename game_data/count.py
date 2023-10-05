@@ -12,7 +12,6 @@ class Count(Parse):
         self,
         config: Namespace,
         unknown: dict[str, list[str]],
-        output_template_file: Path,
         args: Namespace,
     ):
         Parse.__init__(
@@ -22,13 +21,15 @@ class Count(Parse):
             args=args,
         )
 
+        self.__output_file = Path(config.output_file)
+
         self.__unknown_commands: list[str] = unknown["commands"]
-        self.__unknown_commands_file = output_template_file.with_name(
-            f"{output_template_file.stem}_unknown_commands.txt"
+        self.__unknown_commands_file = self.__output_file.with_name(
+            f"{self.__output_file.stem}_unknown_commands.txt"
         )
         self.__unknown_heads: list[str] = unknown["heads"]
-        self.__unknown_heads_file = output_template_file.with_name(
-            f"{output_template_file.stem}_unknown_heads.txt"
+        self.__unknown_heads_file = self.__output_file.with_name(
+            f"{self.__output_file.stem}_unknown_heads.txt"
         )
 
         from string import punctuation as punc_en

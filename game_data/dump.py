@@ -84,19 +84,19 @@ class Dump(Data):
     def __init__(
         self,
         config: Namespace,
-        output_template_file: Path,
         args: Namespace,
     ):
         self.__FONT_NAME: str = config.FONT_NAME
+        self.__output_file = Path(config.output_file)
         self.__name_prefix: list[str] = config.name_prefix
         self.__name_suffix: list[str] = config.name_suffix
         self.__erase_names: list[str] = config.erase_names
         self.__merge_names: list[list[str]] = config.merge_names
 
         today = f"{datetime.date.today():%Y%m%d}"
-        file_name = f"{output_template_file.stem}_{today}"
-        self.__xlsx_file = output_template_file.with_name(f"{file_name}.xlsx")
-        self.__csv_file = output_template_file.with_name(f"{file_name}.csv")
+        file_name = f"{self.__output_file.stem}_{today}"
+        self.__xlsx_file = self.__output_file.with_name(f"{file_name}.xlsx")
+        self.__csv_file = self.__output_file.with_name(f"{file_name}.csv")
 
         self.__debug: bool = args.debug
         self.__style: bool = args.style or args.publish
