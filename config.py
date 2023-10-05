@@ -1,3 +1,4 @@
+import typing as __t
 import tomllib as __tomllib
 from pathlib import Path as __Path
 from argparse import Namespace as __Namespace
@@ -6,7 +7,7 @@ __pyproject: dict[str, dict] = __tomllib.loads(
     __Path(__file__).with_name("pyproject.toml").read_text(encoding="utf-8")
 )
 
-info: dict = __pyproject["tool"]["poetry"]
+info: dict[str, __t.Any] = __pyproject["tool"]["poetry"]
 DATA_DIR = r"./Github/ArknightsGameData/zh_CN/gamedata"
 PICKLE_PATH = r"./tmp/Arknights_Word_Count.pkl"
 XLSX_PATH = r"./docs/Arknights_Word_Count.xlsx"
@@ -25,20 +26,29 @@ dump_config = __Namespace(
         ("“焰尾”索娜", "“焰尾”", "焰尾", "索娜"),
         ("伊万杰利斯塔十一世", "教宗"),
         ("博士", "Dr."),
+        ("埃内斯托", "龙舌兰"),
         ("埃尼斯", "苍苔"),  # 代号尚未在剧情中出现
         ("塞诺蜜", "砾"),
+        ("娜塔莉娅", "早露"),
         ("微光守夜人", "不叫微光守夜人的黎博利", "菲亚梅塔"),
         ("恩希欧迪斯", "银灰"),
+        ("拉维妮娅", "斥罪"),
         ("无言的达里奥", "达里奥"),
         ("玛嘉烈", "临光"),
         ("玛莉娅", "瑕光"),
         ("祖玛玛", "森蚺"),
+        ("莱昂图索", "伺夜"),
+        ("费德里科", "送葬人"),
+        ("里凯莱", "隐现"),
+        ("阿芙朵嘉", "鸿雪"),
+        ("阿赫茉妮", "和弦"),
         ("阿黛尔", "艾雅法拉"),
         ("陈晖洁", "陈"),
     ],
 )
 
 count_config = __Namespace(
+    # TODO: use lower case
     known_commands=[
         "AddItem",
         "background",

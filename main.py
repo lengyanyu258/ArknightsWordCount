@@ -1,10 +1,11 @@
 import config
-from game_data import GameData
 
 
 def main():
     import datetime
     from pathlib import Path
+
+    from game_data import GameData
 
     game_data = GameData(
         data_dir,
@@ -36,8 +37,8 @@ def main():
     dump_file = game_data.dump(info)
     if args.publish:
         published_file = Path(config.XLSX_PATH)
-        published_file.unlink(True)
-        published_file.hardlink_to(dump_file)
+        published_file.unlink(missing_ok=True)
+        published_file.hardlink_to(target=dump_file)
 
 
 if __name__ == "__main__":
@@ -107,11 +108,11 @@ if __name__ == "__main__":
         help="Show counter by name in csv file.",
     )
 
-    parser.usage = "$python %(prog)s [-h] [-v] [{options_title}] [data_dir]".format(
+    parser.usage = "python %(prog)s [-h] [-v] [{options_title}] [data_dir]".format(
         options_title=switch.title
     )
     parser.description = config.info["description"]
-    parser.epilog = "e.g.: $python %(prog)s {data_dir}".format(data_dir=config.DATA_DIR)
+    parser.epilog = "e.g.: python %(prog)s {data_dir}".format(data_dir=config.DATA_DIR)
     args = parser.parse_args()
 
     data_dir: str = args.data_dir

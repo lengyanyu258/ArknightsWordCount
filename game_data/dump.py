@@ -77,7 +77,8 @@ class XlHAlign:
 
 
 class Dump(Data):
-    __PUNCTUATION = "PUNC."
+    __WORDS = "字词数"
+    __PUNCTUATION = "标点数"
     __split_pattern = re.compile(r"&|\uFF06|/")
 
     def __init__(
@@ -163,7 +164,7 @@ class Dump(Data):
         # 合并名称
         counter_dict: dict[str, dict[str, int]] = {}
         for names in merged_names:
-            merged_name = "/".join(sorted(names, key=lambda name: len(name)))
+            merged_name = "/".join(sorted(names, key=lambda name: len(name.encode())))
             counter_dict[merged_name] = {
                 "words": 0,
                 "punctuation": 0,
@@ -214,7 +215,7 @@ class Dump(Data):
             + [
                 "Index",
                 "Name",
-                "Words",
+                self.__WORDS,
                 self.__PUNCTUATION,
             ]
         )
@@ -269,7 +270,7 @@ class Dump(Data):
         self, sheet_overview_list: list, dic: dict[str, dict], sorted_info_key: str
     ):
         sheet_overview_list.append(
-            ["Index", "Name", "Words", self.__PUNCTUATION, "Commands"]
+            ["Index", "Name", self.__WORDS, self.__PUNCTUATION, "Commands"]
         )
         keys = list(dic["items"].keys())
         sorted_keys = sorted(
@@ -301,7 +302,7 @@ class Dump(Data):
             )
 
         keys_list = ["name", "words", "punctuation", "commands"]
-        title_bar = [key.title() for key in keys_list]
+        title_bar = ["Name", self.__WORDS, self.__PUNCTUATION, "Commands"]
         sheet_simple_list[-1] += [""] + title_bar
         append_list("", dic["info"])
 
@@ -337,6 +338,7 @@ class Dump(Data):
                 self.__gen_detail_data(tab_time + 1, items_dict[key])
 
     def gen_excel(self, info: dict) -> Path:
+        # TODO: use xlsxwriter instead
         import xlwings as xw
 
         sheets_detail_dict = {}
@@ -482,7 +484,7 @@ class Dump(Data):
 
                 sheet_simple.autofit()
                 for y, l in enumerate(sheet_simple_list):
-                    for x in self.__find_indices(l, "Words"):
+                    for x in self.__find_indices(l, self.__WORDS):
                         rest_title_range = sheet_simple[y, x : x + 3]
                         rest_title_range.api.HorizontalAlignment = (
                             XlHAlign.xlHAlignCenter

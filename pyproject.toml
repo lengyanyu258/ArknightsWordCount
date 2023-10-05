@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "arknights-word-count"
-version = "2.2.3"
+version = "2.2.4"
 description = "《明日方舟》字词统计"
 authors = ["Shawn Sun <lengyanyu258@outlook.com>"]
 license = "MIT"
