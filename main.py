@@ -1,4 +1,4 @@
-import config
+from config import Config
 
 
 def main():
@@ -9,9 +9,9 @@ def main():
 
     game_data = GameData(
         data_dir,
-        config=config.game_data_config,
-        count_config=config.count_config,
-        dump_config=config.dump_config,
+        config=Config.game_data_config,
+        count_config=Config.count_config,
+        dump_config=Config.dump_config,
         args=args,
     )
 
@@ -24,9 +24,9 @@ def main():
         game_data._data_version_path.read_text(encoding="utf-8").split()[-2].strip()
     )
     info = {
-        "title": config.info["description"],
+        "title": Config.info["description"],
         "data": {
-            "程序版本": config.info["version"],
+            "程序版本": Config.info["version"],
             "数据版本": game_data.data["excel"]["gamedata_const"]["dataVersion"],
             "数据日期": data_date.replace("/", "-"),
             "文档日期": f"{datetime.date.today():%Y-%m-%d}",
@@ -36,7 +36,7 @@ def main():
     }
     dump_file = game_data.dump(info)
     if args.publish:
-        published_file = Path(config.xlsx_file)
+        published_file = Path(Config.xlsx_file)
         published_file.unlink(missing_ok=True)
         published_file.hardlink_to(target=dump_file)
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         "--version",
         action="version",
         version="{name} {version} {license} licensed by {authors} 2023年6月17日".format(
-            **config.info
+            **Config.info
         ),
     )
     parser.add_argument(
@@ -111,13 +111,13 @@ if __name__ == "__main__":
     parser.usage = "python %(prog)s [-h] [-v] [{options_title}] [data_dir]".format(
         options_title=switch.title
     )
-    parser.description = config.info["description"]
-    parser.epilog = "e.g.: python %(prog)s {data_dir}".format(data_dir=config.DATA_DIR)
+    parser.description = Config.info["description"]
+    parser.epilog = "e.g.: python %(prog)s {data_dir}".format(data_dir=Config.DATA_DIR)
     args = parser.parse_args()
 
     data_dir: str = args.data_dir
     if not data_dir:
-        data_dir = config.DATA_DIR
+        data_dir = Config.DATA_DIR
 
     # strip ambiguous chars.
     data_dir = data_dir.encode().translate(None, delete='*?"<>|'.encode()).decode()
