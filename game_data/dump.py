@@ -87,7 +87,7 @@ class Dump(Data):
         args: Namespace,
     ):
         self.__FONT_NAME: str = config.FONT_NAME
-        self.__output_file = Path(config.output_file)
+        self.__output_file = Path(config.output_file_path)
         self.__name_prefix: list[str] = config.name_prefix
         self.__name_suffix: list[str] = config.name_suffix
         self.__erase_names: list[str] = config.erase_names
@@ -106,11 +106,9 @@ class Dump(Data):
     def __find_indices(self, list_to_check: list, item_to_find: str | int) -> list:
         return [idx for idx, value in enumerate(list_to_check) if value == item_to_find]
 
-    def __merge_counter_dict(self, counter: dict):
+    def __merge_counter_dict(self, counter: dict[str, dict]):
+        # 分离名称
         for origin_name in list(counter.keys()):
-            if self.__debug and "的" in origin_name:
-                print("preffix:", origin_name)
-
             names = re.split(self.__split_pattern, origin_name)
             if len(names) > 1:
                 for name in names:
@@ -143,6 +141,11 @@ class Dump(Data):
 
         # 扩增名称
         for origin_name in origin_names[:]:
+            # TODO: ❌❌的⭕⭕ -> (❌❌|❌❌)的⭕⭕
+            if self.__debug and "的" in origin_name:
+                p, s = origin_name.split(sep="的", maxsplit=1)
+                print("(suf|pre)fix:", s, p, origin_name)
+
             names = []
             for i in product(name_prefixes, [origin_name], name_suffixes):
                 new_name = "".join(i)

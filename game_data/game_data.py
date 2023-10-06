@@ -16,17 +16,17 @@ class GameData(Count, Dump):
 
     def __init__(
         self,
-        data_dir: str,
+        data_dir_path: str,
         config: Namespace,
         count_config: Namespace,
         dump_config: Namespace,
         args: Namespace,
     ):
-        data_dir_path = Path(data_dir)
-        if not data_dir_path.is_dir():
-            raise NotADirectoryError(f"{data_dir_path.absolute()} is not a directory!")
+        data_dir = Path(data_dir_path)
+        if not data_dir.is_dir():
+            raise NotADirectoryError(f"{data_dir.absolute()} is not a directory!")
 
-        self.__pickle_file = Path(config.pickle_file)
+        self.__pickle_file = Path(config.pickle_file_path)
 
         Count.__init__(
             self=self,
@@ -46,8 +46,12 @@ class GameData(Count, Dump):
             f"{self.__pickle_file.stem}_unknown_files.txt"
         )
 
-        excel_dir = data_dir_path / "excel"
-        self.__story_dir = data_dir_path / "story"
+        excel_dir = data_dir / "excel"
+        self.__story_dir = data_dir / "story"
+
+        self._data_version_path = excel_dir / "data_version.txt"
+        if not self._data_version_path.exists():
+            raise FileNotFoundError(f"{self._data_version_path.absolute()} not found!")
 
         self.__excel_dirs: dict[str, Path] = {
             "activity_table": excel_dir / "activity_table.json",
@@ -61,7 +65,6 @@ class GameData(Count, Dump):
             "activities": self.__story_dir / "activities",
             "obt": self.__story_dir / "obt",
         }
-        self._data_version_path = excel_dir / "data_version.txt"
 
         self.__load_data()
 

@@ -21,7 +21,7 @@ class Count(Parse):
             args=args,
         )
 
-        self.__output_file = Path(config.output_file)
+        self.__output_file = Path(config.output_file_path)
 
         self.__unknown_commands: list[str] = unknown["commands"]
         self.__unknown_commands_file = self.__output_file.with_name(

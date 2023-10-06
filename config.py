@@ -13,13 +13,13 @@ class Config:
     DATA_DIR = r"./Github/ArknightsGameData/zh_CN/gamedata"
 
     info: dict[str, Any] = pyproject["tool"]["poetry"]
-    xlsx_file = f"./docs/{filename}.xlsx"
+    xlsx_file_path = f"./docs/{filename}.xlsx"
 
-    game_data_config = Namespace(pickle_file=f"./tmp/{filename}.pkl")
+    game_data_config = Namespace(pickle_file_path=f"./tmp/{filename}.pkl")
 
     dump_config = Namespace(
         FONT_NAME="Sarasa Mono Slab SC",
-        output_file=game_data_config.pickle_file,
+        output_file_path=game_data_config.pickle_file_path,
         # 名称前缀
         name_prefix=["发言人", "审判官", "大审判官", "小"],
         # 名称后缀
@@ -56,7 +56,7 @@ class Config:
     )
 
     count_config = Namespace(
-        output_file=game_data_config.pickle_file,
+        output_file_path=game_data_config.pickle_file_path,
         # TODO: use lower case
         known_commands=[
             "AddItem",

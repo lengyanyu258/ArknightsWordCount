@@ -8,7 +8,7 @@ def main():
     from game_data import GameData
 
     game_data = GameData(
-        data_dir,
+        data_dir_path=data_dir_path,
         config=Config.game_data_config,
         count_config=Config.count_config,
         dump_config=Config.dump_config,
@@ -36,7 +36,7 @@ def main():
     }
     dump_file = game_data.dump(info)
     if args.publish:
-        published_file = Path(Config.xlsx_file)
+        published_file = Path(Config.xlsx_file_path)
         published_file.unlink(missing_ok=True)
         published_file.hardlink_to(target=dump_file)
 
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         data_dir = Config.DATA_DIR
 
     # strip ambiguous chars.
-    data_dir = data_dir.encode().translate(None, delete='*?"<>|'.encode()).decode()
+    data_dir_path = data_dir.encode().translate(None, delete='*?"<>|'.encode()).decode()
 
     if platform.system().lower() == "windows":
         import io
