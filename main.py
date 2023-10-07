@@ -19,6 +19,8 @@ def main():
         game_data.update()
     if args.count:
         game_data.count()
+    if args.no_dump:
+        return
 
     data_date = (
         game_data._data_version_path.read_text(encoding="utf-8").split()[-2].strip()
@@ -96,6 +98,12 @@ if __name__ == "__main__":
         help="Counting info words.",
     )
     switch.add_argument(
+        "-nd",
+        "--no_dump",
+        action="store_true",
+        help="Do not dump data.",
+    )
+    switch.add_argument(
         "-st",
         "--show_total",
         action="store_true",
@@ -115,9 +123,7 @@ if __name__ == "__main__":
     parser.epilog = "e.g.: python %(prog)s {data_dir}".format(data_dir=Config.DATA_DIR)
     args = parser.parse_args()
 
-    data_dir: str = args.data_dir
-    if not data_dir:
-        data_dir = Config.DATA_DIR
+    data_dir: str = args.data_dir or Config.DATA_DIR
 
     # strip ambiguous chars.
     data_dir_path = data_dir.encode().translate(None, delete='*?"<>|'.encode()).decode()
