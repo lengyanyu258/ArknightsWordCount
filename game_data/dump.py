@@ -141,7 +141,7 @@ class Dump(Data):
 
         # 扩增名称
         for origin_name in origin_names[:]:
-            # TODO: ❌❌的⭕⭕ -> (❌❌|❌❌)的⭕⭕
+            # TODO: ❌❌的⭕⭕ -> (❌❌|❌❌)的⭕⭕ or '\n'.join(['❌❌的⭕⭕',...])
             if self.__debug and "的" in origin_name:
                 p, s = origin_name.split(sep="的", maxsplit=1)
                 print("(suf|pre)fix:", s, p, origin_name)

@@ -126,6 +126,7 @@ class Parse(Data):
             endpos = i.end()
             words.append(word)
         clean_text += text[endpos:]
+        # 方舟特色倒了！狠狠打击水字数 ( ͡• ͜ʖ ͡• ) 预计标点符号数缩水 30%（逃
         clean_text = clean_text.replace("...", "…")
 
         if self.__debug and len(words):
