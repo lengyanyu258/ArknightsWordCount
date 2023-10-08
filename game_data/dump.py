@@ -320,6 +320,7 @@ class Dump(Data):
                 append_list(k, i["info"])
 
     def __gen_detail_data(self, tab_time: int, dic: dict[str, dict]):
+        # TODO: use horizontal format
         info_dict: dict = dic["info"]
         if info_dict["words"] + info_dict["punctuation"] > 0:
             items_dict = dic["items"]

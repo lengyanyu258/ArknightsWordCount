@@ -113,6 +113,7 @@ class Config:
             "imagerotate",
             "imageTween",
             "ImageTween",
+            "interlude",
             "largebg",
             "largebgtween",
             "musicvolume",
