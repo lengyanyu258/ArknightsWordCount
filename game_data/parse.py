@@ -14,7 +14,7 @@ class Parse(Data):
         r"(<[A-Za-z\d/=#@\.]+>)|({@[Nn]ickname})|(\\r)|(\\n)"
     )
     __line_pattern = re.compile(
-        r"([AaPp]\.?[Mm]\.?)|([\u03B1-\u03C9\d]+(?:[\.\-:：]\d+)?(?:%|℃|u/L|M)?)|((?:[A-Za-z]+\.(?!\.))+[A-Za-z]*)|([A-Za-z\u03B1-\u03C9\u0400-\u04FF\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\d]+(?:[/\-']?[A-Za-z\d]+)*)"
+        r"([AaPp]\.?[Mm](?!\w)\.?)|([\u03B1-\u03C9\d]+(?:[\.\-:：]\d+)?(?:%|℃|u/L|M)?)|((?:[A-Za-z]+\.(?!\.))+[A-Za-z]*)|([A-Za-z\u03B1-\u03C9\u0400-\u04FF\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF\d]+(?:[/\-']?[A-Za-z\d]+)*)"
     )
 
     def __init__(
