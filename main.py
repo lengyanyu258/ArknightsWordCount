@@ -32,8 +32,8 @@ def main():
             "数据版本": game_data.data["excel"]["gamedata_const"]["dataVersion"],
             "数据日期": data_date.replace("/", "-"),
             "文档日期": f"{datetime.date.today():%Y-%m-%d}",
+            "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount#说明",
             # "程序作者": config.info["authors"],
-            "程序地址": "https://github.com/lengyanyu258/ArknightsWordCount",
         },
     }
     dump_file = game_data.dump(info)
