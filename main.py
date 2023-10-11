@@ -44,8 +44,8 @@ def main():
 
 
 if __name__ == "__main__":
+    import sys
     import argparse
-    import platform
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -128,9 +128,8 @@ if __name__ == "__main__":
     # strip ambiguous chars.
     data_dir_path = data_dir.encode().translate(None, delete='*?"<>|'.encode()).decode()
 
-    if platform.system().lower() == "windows":
+    if sys.platform == "win32":
         import io
-        import sys
 
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="gb18030")
 

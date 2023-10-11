@@ -404,10 +404,10 @@ class Dump(Data):
 
             book = app.books.add()
             sheet_overview = book.sheets(1)
-            sheet_overview.name = "Overview"
+            sheet_overview.name = "概观"
             sheet_overview[0, 0].value = sheet_overview_list
 
-            sheet_simple = book.sheets.add("Simple", after=sheet_overview)
+            sheet_simple = book.sheets.add("总览", after=sheet_overview)
             sheet_simple[0, 0].value = sheet_simple_list
 
             for key in sheets_detail_dict:
