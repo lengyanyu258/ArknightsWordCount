@@ -79,6 +79,7 @@ class XlHAlign:
 class Dump(Data):
     __WORDS = "字词数"
     __PUNCTUATION = "标点数"
+    __COMMANDS = "指令数"
     __split_pattern = re.compile(r"&|\uFF06|/")
 
     def __init__(
@@ -255,13 +256,19 @@ class Dump(Data):
         sheet_list.append([])
 
     def __gen_info_data(self, tab_time: int, info_dict: dict, sheet_list: list):
-        title_bar = ["name", "type", "words", "punctuation", "commands"]
-        for i in title_bar:
+        bar = {
+            "name": "Name",
+            "type": "Type",
+            "words": self.__WORDS,
+            "punctuation": self.__PUNCTUATION,
+            "commands": self.__COMMANDS,
+        }
+        for i in bar:
             if i in info_dict and info_dict[i]:
                 sheet_list.append(
                     [""] * tab_time
                     + [
-                        i.title(),
+                        bar[i],
                         info_dict[i],
                     ]
                 )
@@ -273,7 +280,7 @@ class Dump(Data):
         self, sheet_overview_list: list, dic: dict[str, dict], sorted_info_key: str
     ):
         sheet_overview_list.append(
-            ["Index", "Name", self.__WORDS, self.__PUNCTUATION, "Commands"]
+            ["Index", "Name", self.__WORDS, self.__PUNCTUATION, self.__COMMANDS]
         )
         keys = list(dic["items"].keys())
         sorted_keys = sorted(
@@ -305,7 +312,7 @@ class Dump(Data):
             )
 
         keys_list = ["name", "words", "punctuation", "commands"]
-        title_bar = ["Name", self.__WORDS, self.__PUNCTUATION, "Commands"]
+        title_bar = ["Name", self.__WORDS, self.__PUNCTUATION, self.__COMMANDS]
         sheet_simple_list[-1] += [""] + title_bar
         append_list("", dic["info"])
 
@@ -464,6 +471,7 @@ class Dump(Data):
 
                 cell_all = sheet_overview[0, 0].end("down").end("down")
                 cell_all.current_region.autofit()
+                sheet_overview[1:, 0].autofit()
                 cell_all_right = cell_all.current_region.last_cell
 
                 sheet_overview[:, 0].api.HorizontalAlignment = XlHAlign.xlHAlignRight
