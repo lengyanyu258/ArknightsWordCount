@@ -116,7 +116,7 @@ class Count(Parse):
                     story_id, {"info": {"name": name}, "items": {}}
                 )
                 story_dict: dict[str, dict] = story_id_dict["items"].setdefault(
-                    story_code, {"info": {"name": story_name}, "items": {}}
+                    story_code, {"info": {"name": story_name.strip()}, "items": {}}
                 )
                 avg_dict: dict[str, dict] = story_dict["items"].setdefault(
                     avg_tag, {"info": {}, "items": {}}
