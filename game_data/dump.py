@@ -255,7 +255,9 @@ class Dump(Data):
 
         sheet_list.append([])
 
-    def __gen_info_data(self, tab_time: int, info_dict: dict, sheet_list: list):
+    def __gen_info_data(
+        self, tab_time: int, info_dict: dict, sheet_list: list, number: int | None = 10
+    ):
         bar = {
             "name": "Name",
             "type": "Type",
@@ -274,7 +276,7 @@ class Dump(Data):
                 )
 
         if len(info_dict["counter"]) != 1:
-            self.__gen_sorted_counter_data(tab_time, info_dict, sheet_list, number=13)
+            self.__gen_sorted_counter_data(tab_time, info_dict, sheet_list, number)
 
     def __gen_overview_data(
         self, sheet_overview_list: list, dic: dict[str, dict], sorted_info_key: str
@@ -360,7 +362,7 @@ class Dump(Data):
         sheet_overview_list = []
         self.__add_info_data(info, sheet_overview_list)
         sheet_overview_list.append(["ALL"])
-        self.__gen_info_data(0, self.data["count"]["info"], sheet_overview_list)
+        self.__gen_info_data(0, self.data["count"]["info"], sheet_overview_list, 13)
         self.__amend_sheet_list(sheet_overview_list)
         sheets_overview_list.append(sheet_overview_list)
         storys_overview_dict = {"items": {}}
