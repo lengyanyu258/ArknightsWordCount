@@ -79,7 +79,10 @@ class Parse(Data):
                         warnings.warn(f"not found {head}")
                         name = head
             else:
-                name = head
+                if "head" not in command:
+                    name = self.__ASIDE_NAME
+                else:
+                    name = head
                 if self.__debug and head not in self.__unknown_heads:
                     self.__unknown_heads.append(head)
         elif control_command in ("name") or command.startswith("(name"):
