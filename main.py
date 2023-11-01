@@ -39,6 +39,9 @@ def main():
         published_file = Path(Config.xlsx_file_path)
         published_file.unlink(missing_ok=True)
         published_file.hardlink_to(target=dump_file)
+        alternative_file = published_file.with_name(dump_file.name)
+        alternative_file.unlink(missing_ok=True)
+        alternative_file.hardlink_to(target=dump_file)
 
 
 if __name__ == "__main__":

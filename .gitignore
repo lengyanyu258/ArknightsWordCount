@@ -5,15 +5,15 @@ GitHub/
 temp/
 tmp/
 
-# Special files
-!arknights-word-count.xlsx
-tmp.txt
-
 # Pickle: Create portable serialized representations of Python objects.
 *.pkl
 
 # Others
 *.xlsx
+
+# Special files
+!arknights-word-count*.xlsx
+tmp.txt
 
 #
 # ============================== Python.gitignore ==============================
