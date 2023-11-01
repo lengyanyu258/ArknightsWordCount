@@ -22,17 +22,15 @@ def main():
     if args.no_dump:
         return
 
-    data_date = (
-        game_data._data_version_path.read_text(encoding="utf-8").split()[-2].strip()
-    )
+    data_date = game_data._data_version_path.read_text(encoding="utf-8").split()[-2]
     info = {
         "title": Config.info["description"],
         "data": {
             "程序版本": Config.info["version"],
             "数据版本": game_data.data["excel"]["gamedata_const"]["dataVersion"],
-            "数据日期": data_date.replace("/", "-"),
-            "文档日期": f"{datetime.date.today():%Y-%m-%d}",
-            "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount#说明",
+            "数据日期": data_date.strip(),
+            "文档日期": f"{datetime.date.today():%Y/%m/%d}",
+            "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki",
             # "程序作者": config.info["authors"],
         },
     }
@@ -129,8 +127,8 @@ if __name__ == "__main__":
     data_dir_path = data_dir.encode().translate(None, delete='*?"<>|'.encode()).decode()
 
     if sys.platform == "win32":
-        import io
+        from io import TextIOWrapper
 
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="gb18030")
+        sys.stdout = TextIOWrapper(buffer=sys.stdout.buffer, encoding="gb18030")
 
     main()

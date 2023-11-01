@@ -98,7 +98,7 @@ class Parse(Data):
             for i in command.split(","):
                 if "text" in i:
                     text += i.split("text=")[1].strip(' "')
-        elif control_command in ("narration"):
+        elif control_command in ("narration", "Narration"):
             name = self.__ASIDE_NAME
         elif control_command in ("multiline"):
             name = get_attribute(command)

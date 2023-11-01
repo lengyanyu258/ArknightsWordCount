@@ -274,7 +274,7 @@ class Dump(Data):
                 )
 
         if len(info_dict["counter"]) != 1:
-            self.__gen_sorted_counter_data(tab_time, info_dict, sheet_list)
+            self.__gen_sorted_counter_data(tab_time, info_dict, sheet_list, number=13)
 
     def __gen_overview_data(
         self, sheet_overview_list: list, dic: dict[str, dict], sorted_info_key: str

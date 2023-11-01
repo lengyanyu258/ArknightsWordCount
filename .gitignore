@@ -1,17 +1,19 @@
 # Folders
 .vscode/
 GitHub/
+.wiki/
 temp/
 tmp/
 
 # Special files
+!arknights-word-count.xlsx
 tmp.txt
-
-# Others
-*.xlsx
 
 # Pickle: Create portable serialized representations of Python objects.
 *.pkl
+
+# Others
+*.xlsx
 
 #
 # ============================== Python.gitignore ==============================
