@@ -21,9 +21,9 @@ class Config:
         FONT_NAME="Sarasa Mono Slab SC",
         output_file_path=game_data_config.pickle_file_path,
         # 名称前缀
-        name_prefix=["发言人", "审判官", "大审判官", "小"],
+        name_prefix=["发言人", "审判官", "大审判官", "小", "“"],
         # 名称后缀
-        name_suffix=["骑士", "？"],
+        name_suffix=["骑士", "？", "”"],
         # 排除合并后的名称
         erase_names=["小黑", "小游客", "小村民", "教宗骑士", "感染者骑士"],
         # 合并名称
