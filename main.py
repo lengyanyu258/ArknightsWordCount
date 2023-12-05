@@ -121,7 +121,7 @@ if __name__ == "__main__":
         options_title=switch.title
     )
     parser.description = Config.info["description"]
-    parser.epilog = "e.g.: python %(prog)s {data_dir}".format(data_dir=Config.DATA_DIR)
+    parser.epilog = "e.g.: python %(prog)s -p {data_dir}".format(data_dir=Config.DATA_DIR)
     args = parser.parse_args()
 
     data_dir: str = args.data_dir or Config.DATA_DIR

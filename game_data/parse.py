@@ -37,6 +37,7 @@ class Parse(Data):
             # TODO: use regex
             return cmd_str.split(",")[0].split("=")[1].strip(" '\")")
 
+        # TODO: 使用立绘判断身份
         is_command = True
         control_command = self.__command_pattern.match(command)
         if control_command is None:
@@ -83,8 +84,8 @@ class Parse(Data):
                     name = self.__ASIDE_NAME
                 else:
                     name = head
-                if self.__debug and head not in self.__unknown_heads:
-                    self.__unknown_heads.append(head)
+                    if self.__debug and head not in self.__unknown_heads:
+                        self.__unknown_heads.append(head)
         elif control_command in ("name") or command.startswith("(name"):
             is_command = False
             name = get_attribute(command)
