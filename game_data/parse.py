@@ -82,6 +82,8 @@ class Parse(Data):
             else:
                 if "head" not in command:
                     name = self.__ASIDE_NAME
+                    if self.__debug and (debug_info := f"no head: {head}") not in self.__unknown_heads:
+                        self.__unknown_heads.append(debug_info)
                 else:
                     name = head
                     if self.__debug and head not in self.__unknown_heads:

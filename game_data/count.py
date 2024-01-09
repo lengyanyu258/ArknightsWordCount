@@ -135,10 +135,13 @@ class Count(Parse):
 
         basicInfo = self.data["excel"]["activity_table"]["basicInfo"]
         banned_dirname = {"guide", "tutorial", "training", "act1bossrush", "bossrush"}
+        # TODO: 只统计关卡文本，不统计任务文本（如 act29side chat_）(只影响 activities，不影响 ACTIVITY)
         for story_key in stories:
             parts = story_key.split("/")
             if banned_dirname & set(parts):
                 continue
+            # if parts[-1].startswith("chat_"):
+            #     continue
             command_count, collection_dict = self.parse_story(
                 self.data["story"][story_key]
             )
@@ -170,6 +173,6 @@ class Count(Parse):
 
         if len(self.__unknown_heads):
             tmp_text = ""
-            for i in self.__unknown_heads:
+            for i in sorted(self.__unknown_heads):
                 tmp_text += f'"{i}",\n'
             self.__unknown_heads_file.write_text(tmp_text, encoding="utf-8")
