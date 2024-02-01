@@ -82,7 +82,11 @@ class Parse(Data):
             else:
                 if "head" not in command:
                     name = self.__ASIDE_NAME
-                    if self.__debug and (debug_info := f"no head: {head}") not in self.__unknown_heads:
+                    if (
+                        self.__debug
+                        and (debug_info := f"no head: {head}")
+                        not in self.__unknown_heads
+                    ):
                         self.__unknown_heads.append(debug_info)
                 else:
                     name = head
@@ -93,7 +97,7 @@ class Parse(Data):
             name = get_attribute(command)
             if name == "":
                 name = self.__ASIDE_NAME
-        elif control_command in ("Decision"):
+        elif control_command in ("Decision", "decision"):
             # is_command = False
             name = "Dr."
             for i in command.split(","):
@@ -104,7 +108,7 @@ class Parse(Data):
             for i in command.split(","):
                 if "text" in i:
                     text += i.split("text=")[1].strip(' "')
-        elif control_command in ("narration", "Narration"):
+        elif control_command in ("narration", "Narration", "isAvatarRight"):
             name = self.__ASIDE_NAME
         elif control_command in ("multiline"):
             name = get_attribute(command)

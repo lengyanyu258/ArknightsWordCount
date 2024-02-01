@@ -53,7 +53,7 @@ if __name__ == "__main__":
         "-v",
         "--version",
         action="version",
-        version="{name} {version} {license} licensed by {authors} 2023年6月17日".format(
+        version="{name} {version}, {license} licensed by {authors} 2023年6月17日".format(
             **Config.info
         ),
     )
