@@ -1,9 +1,9 @@
-import re
-import math
 import datetime
-from pathlib import Path
+import math
+import re
 from argparse import Namespace
 from itertools import product
+from pathlib import Path
 
 from .data import Data
 
@@ -79,6 +79,7 @@ class XlHAlign:
 class Dump(Data):
     __WORDS = "字词数"
     __PUNCTUATION = "标点数"
+    __ELLIPSIS = "省略号"
     __COMMANDS = "指令数"
     __split_pattern = re.compile(r"&|\uFF06|/")
 
@@ -263,6 +264,7 @@ class Dump(Data):
             "type": "Type",
             "words": self.__WORDS,
             "punctuation": self.__PUNCTUATION,
+            "ellipsis": self.__ELLIPSIS,
             "commands": self.__COMMANDS,
         }
         for i in bar:
@@ -506,9 +508,9 @@ class Dump(Data):
 
                 for i in range(math.ceil(len(sheet_simple_list[0]) / 7)):
                     # Reduce communicate with excel's times
-                    sheet_simple[
-                        :, i * 7
-                    ].api.HorizontalAlignment = XlHAlign.xlHAlignRight
+                    sheet_simple[:, i * 7].api.HorizontalAlignment = (
+                        XlHAlign.xlHAlignRight
+                    )
                     name_range = sheet_simple[:, i * 7 + 2]
                     name_range.api.HorizontalAlignment = XlHAlign.xlHAlignCenter
 

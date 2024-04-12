@@ -1,8 +1,9 @@
-import copy
 import collections
-from tqdm import tqdm
-from pathlib import Path
+import copy
 from argparse import Namespace
+from pathlib import Path
+
+from tqdm import tqdm
 
 from .parse import Parse
 
@@ -33,6 +34,7 @@ class Count(Parse):
         )
 
         from string import punctuation as punc_en
+
         from zhon.hanzi import punctuation as punc_zh
 
         self.__punctuation: set[str] = set(punc_en + punc_zh)
@@ -63,7 +65,7 @@ class Count(Parse):
             "commands": command_count,
             "words": words_collection.total(),
             "punctuation": punctuation_collection.total(),
-            # "counter": counter_dict,
+            "ellipsis": punctuation_collection["…"],
         }
         for dic in dict_list:
             for key in count_dict:

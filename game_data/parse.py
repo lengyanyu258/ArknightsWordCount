@@ -1,6 +1,6 @@
+import collections
 import re
 import warnings
-import collections
 from argparse import Namespace
 
 from .data import Data
@@ -136,8 +136,9 @@ class Parse(Data):
             endpos = i.end()
             words.append(word)
         clean_text += text[endpos:]
-        # 方舟特色倒了！狠狠打击水字数 ( ͡• ͜ʖ ͡• ) 预计标点符号数缩水 30%（逃
-        clean_text = clean_text.replace("...", "…")
+        # 方舟特色倒了！狠狠打击水字数 ( ͡• ͜ʖ ͡• ) 标点符号数缩水 38.19%（逃
+        # 破案了！(＃°Д°) 原来省略号占了总标点符号数的 45.85%！（现已被削弱为⅛）
+        clean_text = clean_text.replace("……", "…").replace("......", "…")
 
         if self.__debug and len(words):
             print(words, command)
