@@ -139,6 +139,7 @@ class Parse(Data):
         # 方舟特色倒了！狠狠打击水字数 ( ͡• ͜ʖ ͡• ) 标点符号数缩水 38.19%（逃
         # 破案了！(＃°Д°) 原来省略号占了总标点符号数的 45.85%！（现已被削弱为⅛）
         clean_text = clean_text.replace("……", "…").replace("......", "…")
+        clean_text = clean_text.replace("——", "—")
 
         if self.__debug and len(words):
             print(words, command)

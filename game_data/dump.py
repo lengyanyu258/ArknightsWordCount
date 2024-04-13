@@ -260,7 +260,7 @@ class Dump(Data):
         self, tab_time: int, info_dict: dict, sheet_list: list, number: int | None = 10
     ):
         bar = {
-            "name": "Name",
+            "name": "Title",
             "type": "Type",
             "words": self.__WORDS,
             "punctuation": self.__PUNCTUATION,
