@@ -52,6 +52,7 @@ class Count(Parse):
             counter_dict[name] = {
                 "words": 0,
                 "punctuation": 0,
+                "ellipsis": collection["…"],
             }
             collection_set = set(collection)
             for i in self.__punctuation & collection_set:

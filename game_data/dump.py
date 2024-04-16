@@ -173,6 +173,7 @@ class Dump(Data):
             counter_dict[merged_name] = {
                 "words": 0,
                 "punctuation": 0,
+                "ellipsis": 0,
             }
             for name in names:
                 for key in counter[name]:
@@ -222,6 +223,7 @@ class Dump(Data):
                 "Name",
                 self.__WORDS,
                 self.__PUNCTUATION,
+                self.__ELLIPSIS,
             ]
         )
         sorted_counter_items = sorted(
@@ -238,6 +240,7 @@ class Dump(Data):
                     item[0],
                     item[1]["words"],
                     item[1]["punctuation"],
+                    item[1]["ellipsis"],
                 ]
             )
 
@@ -284,7 +287,14 @@ class Dump(Data):
         self, sheet_overview_list: list, dic: dict[str, dict], sorted_info_key: str
     ):
         sheet_overview_list.append(
-            ["Index", "Name", self.__WORDS, self.__PUNCTUATION, self.__COMMANDS]
+            [
+                "Index",
+                "Name",
+                self.__WORDS,
+                self.__PUNCTUATION,
+                self.__ELLIPSIS,
+                self.__COMMANDS,
+            ]
         )
         keys = list(dic["items"].keys())
         sorted_keys = sorted(
@@ -300,6 +310,7 @@ class Dump(Data):
                     info_dict["name"] if "name" in info_dict else k,
                     info_dict["words"],
                     info_dict["punctuation"],
+                    info_dict["ellipsis"],
                     info_dict["commands"],
                 ]
             )
@@ -315,8 +326,14 @@ class Dump(Data):
                 [""] + [f"'{index}"] + [f"'{content_bar[0]}"] + content_bar[1:]
             )
 
-        keys_list = ["name", "words", "punctuation", "commands"]
-        title_bar = ["Name", self.__WORDS, self.__PUNCTUATION, self.__COMMANDS]
+        keys_list = ["name", "words", "punctuation", "ellipsis", "commands"]
+        title_bar = [
+            "Title",
+            self.__WORDS,
+            self.__PUNCTUATION,
+            self.__ELLIPSIS,
+            self.__COMMANDS,
+        ]
         sheet_simple_list[-1] += [""] + title_bar
         append_list("", dic["info"])
 
@@ -341,7 +358,7 @@ class Dump(Data):
                     self.__sheet_detail_list.append(
                         [""] * tab_time
                         + [
-                            "Name",
+                            "Title",
                             info_dict["name"],
                         ]
                     )
@@ -464,7 +481,7 @@ class Dump(Data):
                             )
 
                         if "Merged" in str(sheet_overview[y - 1, x].value):
-                            commands_range = sheet_overview[:, x + 4]
+                            commands_range = sheet_overview[:, x + 5]
                             commands_range.api.Font.Bold = True
                         else:
                             words_range = sheet_overview[:, x + 2]
