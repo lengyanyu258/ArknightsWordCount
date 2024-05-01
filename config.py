@@ -1,7 +1,7 @@
 import tomllib
-from typing import Any
-from pathlib import Path
 from argparse import Namespace
+from pathlib import Path
+from typing import Any
 
 pyproject: dict[str, dict[str, Any]] = tomllib.loads(
     Path(__file__).with_name("pyproject.toml").read_text(encoding="utf-8")
@@ -36,7 +36,12 @@ class Config:
             ("埃尼斯", "苍苔"),  # 代号尚未在剧情中出现
             ("塞诺蜜", "砾"),
             ("娜塔莉娅", "早露"),
-            ("微光守夜人", "不叫微光守夜人的黎博利", "苦难陈述者", "菲亚梅塔"),  # unstable sort
+            (
+                "微光守夜人",
+                "不叫微光守夜人的黎博利",
+                "苦难陈述者",
+                "菲亚梅塔",
+            ),  # unstable sort
             ("恩希欧迪斯", "银灰"),
             ("拉维妮娅", "斥罪"),
             ("无言的达里奥", "达里奥"),
@@ -106,6 +111,7 @@ class Config:
             "delay9ti",
             "delayt",
             "dialo",
+            "duration",
             "effect",
             "Effect",
             "emoji",
