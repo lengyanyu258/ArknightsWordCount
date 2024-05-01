@@ -518,17 +518,17 @@ class Dump(Data):
                 sheet_simple.autofit()
                 for y, l in enumerate(sheet_simple_list):
                     for x in self.__find_indices(l, self.__WORDS):
-                        rest_title_range = sheet_simple[y, x : x + 3]
+                        rest_title_range = sheet_simple[y, x : x + 4]
                         rest_title_range.api.HorizontalAlignment = (
                             XlHAlign.xlHAlignCenter
                         )
 
-                for i in range(math.ceil(len(sheet_simple_list[0]) / 7)):
+                for i in range(math.ceil(len(sheet_simple_list[0]) / 8)):
                     # Reduce communicate with excel's times
-                    sheet_simple[:, i * 7].api.HorizontalAlignment = (
+                    sheet_simple[:, i * 8].api.HorizontalAlignment = (
                         XlHAlign.xlHAlignRight
                     )
-                    name_range = sheet_simple[:, i * 7 + 2]
+                    name_range = sheet_simple[:, i * 8 + 2]
                     name_range.api.HorizontalAlignment = XlHAlign.xlHAlignCenter
 
                 self._info("done.", end=True)
