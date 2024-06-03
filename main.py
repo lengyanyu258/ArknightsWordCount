@@ -3,6 +3,7 @@ from config import Config
 
 def main():
     import datetime
+    import re
     from pathlib import Path
 
     from game_data import GameData
@@ -31,11 +32,18 @@ def main():
             "数据日期": data_date.strip(),
             "文档日期": f"{datetime.date.today():%Y/%m/%d}",
             "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki",
-            # "程序作者": config.info["authors"],
         },
+        "authors": Config.info["authors"],
     }
     dump_file = game_data.dump(info)
     if args.publish:
+        # remove old files
+        [
+            file_path.unlink()
+            for file_path in Path(Config.xlsx_file_path).parent.glob("*.xlsx")
+        ]
+
+        # add new files
         published_file = Path(Config.xlsx_file_path)
         published_file.unlink(missing_ok=True)
         published_file.hardlink_to(target=dump_file)
@@ -43,10 +51,21 @@ def main():
         alternative_file.unlink(missing_ok=True)
         alternative_file.hardlink_to(target=dump_file)
 
+        # modify the index.html file
+        index_html_file = published_file.with_name("index.html")
+        index_html_file.write_text(
+            re.sub(
+                r"arknights-word-count_\d+\.xlsx",
+                dump_file.name,
+                index_html_file.read_text(encoding="utf-8"),
+            ),
+            encoding="utf-8",
+        )
+
 
 if __name__ == "__main__":
-    import sys
     import argparse
+    import sys
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -104,24 +123,14 @@ if __name__ == "__main__":
         action="store_true",
         help="Do not dump data.",
     )
-    switch.add_argument(
-        "-st",
-        "--show_total",
-        action="store_true",
-        help="Show total words in csv file.",
-    )
-    switch.add_argument(
-        "-sc",
-        "--show_counter",
-        action="store_true",
-        help="Show counter by name in csv file.",
-    )
 
     parser.usage = "python %(prog)s [-h] [-v] [{options_title}] [data_dir]".format(
         options_title=switch.title
     )
     parser.description = Config.info["description"]
-    parser.epilog = "e.g.: python %(prog)s -p {data_dir}".format(data_dir=Config.DATA_DIR)
+    parser.epilog = "e.g.: python %(prog)s -p {data_dir}".format(
+        data_dir=Config.DATA_DIR
+    )
     args = parser.parse_args()
 
     data_dir: str = args.data_dir or Config.DATA_DIR

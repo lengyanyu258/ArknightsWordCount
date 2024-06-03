@@ -4,76 +4,9 @@ import re
 from argparse import Namespace
 from itertools import product
 from pathlib import Path
+from typing import Any, Optional
 
 from .data import Data
-
-
-class XlBordersIndex:
-    # 从区域中每个单元格的左上角到右下角的边框。
-    xlDiagonalDown = 5
-    # 从区域中每个单元格的左下角到右上角的边框。
-    xlDiagonalUp = 6
-    # 区域底部的边框。
-    xlEdgeBottom = 9
-    # 区域左边缘的边框。
-    xlEdgeLeft = 7
-    # 区域右边缘的边框。
-    xlEdgeRight = 10
-    # 区域顶部的边框。
-    xlEdgeTop = 8
-    # 区域中所有单元格的水平边框（区域以外的边框除外）。
-    xlInsideHorizontal = 12
-    # 区域中所有单元格的垂直边框（区域以外的边框除外）。
-    xlInsideVertical = 11
-
-
-class XlLineStyle:
-    # 实线。
-    xlContinuous = 1
-    # 虚线。
-    xlDash = -4115
-    # 点划相间线。
-    xlDashDot = 4
-    # 划线后跟两个点。
-    xlDashDotDot = 5
-    # 点线。
-    xlDot = -4142
-    # 双线。
-    xlDouble = -4119
-    # 无线。
-    xlLineStyleNone = -4118
-    # 倾斜的划线。
-    xlSlantDashDot = 13
-
-
-class XlBorderWeight:
-    # 细线（最细的边框）。
-    xlHairline = 1
-    # 中。
-    xlMedium = -4138
-    # 粗（最宽的边框）。
-    xlThick = 4
-    # 薄。
-    xlThin = 2
-
-
-class XlHAlign:
-    # 居中。
-    xlHAlignCenter = -4108
-    # 跨列居中。
-    xlHAlignCenterAcrossSelection = 7
-    # 分散对齐。
-    xlHAlignDistributed = -4117
-    # 填充。
-    xlHAlignFill = 5
-    # 按数据类型对齐。
-    xlHAlignGeneral = 1
-    # 两端对齐。
-    xlHAlignJustify = -4130
-    # 靠左。
-    xlHAlignLeft = -4131
-    # 靠右。
-    xlHAlignRight = -4152
 
 
 class Dump(Data):
@@ -89,6 +22,7 @@ class Dump(Data):
         args: Namespace,
     ):
         self.__FONT_NAME: str = config.FONT_NAME
+        self.__font_path: tuple[str] = config.font_path
         self.__output_file = Path(config.output_file_path)
         self.__name_prefix: list[str] = config.name_prefix
         self.__name_suffix: list[str] = config.name_suffix
@@ -98,15 +32,9 @@ class Dump(Data):
         today = f"{datetime.date.today():%Y%m%d}"
         file_name = f"{self.__output_file.stem}_{today}"
         self.__xlsx_file = self.__output_file.with_name(f"{file_name}.xlsx")
-        self.__csv_file = self.__output_file.with_name(f"{file_name}.csv")
 
         self.__debug: bool = args.debug
         self.__style: bool = args.style or args.publish
-        self.__show_counter: bool = args.show_counter
-        self.__show_total: bool = args.show_total
-
-    def __find_indices(self, list_to_check: list, item_to_find: str | int) -> list:
-        return [idx for idx, value in enumerate(list_to_check) if value == item_to_find]
 
     def __merge_counter_dict(self, counter: dict[str, dict]):
         # 分离名称
@@ -188,14 +116,14 @@ class Dump(Data):
         for sheet in sheets[1:]:
             len_sheet_bar = len(sheet_list[0])
             for index, bar in enumerate(sheet):
-                content_bar = [""] + bar
+                content_bar = [None] + bar
                 try:
                     sheet_list[index] += content_bar
                 except IndexError:
-                    sheet_list.append([""] * len_sheet_bar + content_bar)
+                    sheet_list.append([None] * len_sheet_bar + content_bar)
             else:
                 len_amend_sheet = len(sheet_list[0]) - len_sheet_bar
-                content_bar = [""] * len_amend_sheet
+                content_bar = [None] * len_amend_sheet
                 for bar in sheet_list[len(sheet) :]:
                     bar += content_bar
         return sheet_list
@@ -205,7 +133,7 @@ class Dump(Data):
         maximum_offset = max(len_counter)
 
         for i in range(len(sheet_list)):
-            sheet_list[i] += [""] * (maximum_offset - len_counter[i])
+            sheet_list[i] += [None] * (maximum_offset - len_counter[i])
 
     def __gen_sorted_counter_data(
         self,
@@ -216,7 +144,7 @@ class Dump(Data):
         is_show_counter: bool = True,
     ):
         sheet_list.append(
-            [""] * tab_time
+            [None] * tab_time
             + (["Counter"] if is_show_counter else [])
             + [
                 "Index",
@@ -233,8 +161,8 @@ class Dump(Data):
         )
         for index, item in enumerate(sorted_counter_items[:number]):
             sheet_list.append(
-                [""] * tab_time
-                + ([""] if is_show_counter else [])
+                [None] * tab_time
+                + ([None] if is_show_counter else [])
                 + [
                     index + 1,
                     item[0],
@@ -246,14 +174,14 @@ class Dump(Data):
 
     def __add_info_data(self, info: dict, sheet_list: list):
         def append_list(a, b):
-            sheet_list.append([f"{a}：", f"'{b}"])
+            sheet_list.append([f"{a}：", b])
 
         sheet_list.append([info["title"]])
         for k, v in info["data"].items():
             if type(v) == list:
                 append_list(k, v[0])
                 for i in v[1:]:
-                    sheet_list.append(["", f"'{i}"])
+                    sheet_list.append([None, i])
             else:
                 append_list(k, v)
 
@@ -272,13 +200,7 @@ class Dump(Data):
         }
         for i in bar:
             if i in info_dict and info_dict[i]:
-                sheet_list.append(
-                    [""] * tab_time
-                    + [
-                        bar[i],
-                        info_dict[i],
-                    ]
-                )
+                sheet_list.append([None] * tab_time + [bar[i], info_dict[i]])
 
         if len(info_dict["counter"]) != 1:
             self.__gen_sorted_counter_data(tab_time, info_dict, sheet_list, number)
@@ -306,7 +228,7 @@ class Dump(Data):
             info_dict = dic["items"][k]["info"]
             sheet_overview_list.append(
                 [
-                    str(index + 1),
+                    index + 1,
                     info_dict["name"] if "name" in info_dict else k,
                     info_dict["words"],
                     info_dict["punctuation"],
@@ -318,13 +240,11 @@ class Dump(Data):
     def __gen_simple_data(
         self, sheet_simple_list: list, dic: dict[str, dict[str, dict[str, dict]]]
     ):
-        def append_list(index: str, info_dict: dict):
+        def append_list(index: str | None, info_dict: dict):
             content_bar = [
-                info_dict[key] if key in dic["info"] else "" for key in keys_list
+                info_dict[key] if key in dic["info"] else None for key in keys_list
             ]
-            sheet_simple_list.append(
-                [""] + [f"'{index}"] + [f"'{content_bar[0]}"] + content_bar[1:]
-            )
+            sheet_simple_list.append([None, index] + content_bar)
 
         keys_list = ["name", "words", "punctuation", "ellipsis", "commands"]
         title_bar = [
@@ -334,15 +254,15 @@ class Dump(Data):
             self.__ELLIPSIS,
             self.__COMMANDS,
         ]
-        sheet_simple_list[-1] += [""] + title_bar
-        append_list("", dic["info"])
+        sheet_simple_list[-1] += [None] + title_bar
+        append_list(None, dic["info"])
 
         for item_key, item in dic["items"].items():
             sheet_simple_list.append([])
-            sheet_simple_list.append([f"'{item_key}"] + [""] + title_bar)
+            sheet_simple_list.append([item_key] + [None] + title_bar)
 
             if len(item["items"]) > 1:
-                append_list("", item["info"])
+                append_list(None, item["info"])
 
             for k, i in item["items"].items():
                 append_list(k, i["info"])
@@ -356,25 +276,23 @@ class Dump(Data):
                 if "name" in info_dict:
                     # if "name" not in list(items_dict.values())[0]["info"]:
                     self.__sheet_detail_list.append(
-                        [""] * tab_time
-                        + [
-                            "Title",
-                            info_dict["name"],
-                        ]
+                        [None] * tab_time + ["Title", info_dict["name"]]
                     )
             else:
                 self.__gen_info_data(tab_time, info_dict, self.__sheet_detail_list)
 
             for key in items_dict:
-                self.__sheet_detail_list.append([""] * tab_time + [f"'{key}"])
+                self.__sheet_detail_list.append([None] * tab_time + [key])
                 self.__gen_detail_data(tab_time + 1, items_dict[key])
 
     def gen_excel(self, info: dict) -> Path:
-        # TODO: use xlsxwriter instead
-        import xlwings as xw
+        from xlsxwriter import Workbook
 
         sheets_detail_dict = {}
         sheets_simple_list = []
+
+        overview = Namespace()
+        simple = Namespace()
 
         self.__merge_counter_dict(self.data["count"]["info"]["counter"])
         sheets_overview_list = []
@@ -390,7 +308,7 @@ class Dump(Data):
             self.__sheet_detail_list = [[entry_type]]
             self.__gen_detail_data(0, item_dict)
             self.__amend_sheet_list(self.__sheet_detail_list)
-            sheets_detail_dict[f"{entry_type}"] = self.__sheet_detail_list
+            sheets_detail_dict[entry_type] = self.__sheet_detail_list
 
             sheet_simple_list = [[entry_type]]
             self.__gen_simple_data(sheet_simple_list, item_dict)
@@ -424,214 +342,332 @@ class Dump(Data):
             self.__amend_sheet_list(sheet_overview_list)
             sheets_overview_list.append(sheet_overview_list)
 
-            sheet_simple_list = self.__merge_sheets_list(sheets_simple_list)
-            sheet_overview_list = self.__merge_sheets_list(sheets_overview_list)
+            overview.data = self.__merge_sheets_list(sheets_overview_list)
+            simple.data = self.__merge_sheets_list(sheets_simple_list)
 
-        with xw.App(visible=False, add_book=False) as app:
+        with Workbook(self.__xlsx_file) as workbook:
             self._info("Writing to excel...")
 
-            book = app.books.add()
-            sheet_overview = book.sheets(1)
-            sheet_overview.name = "概观"
-            sheet_overview[0, 0].value = sheet_overview_list
+            def write_worksheet(
+                worksheet: Workbook.worksheet_class,
+                data: list[list],
+                cells_format: Optional[list[list]] = None,
+            ):
+                for row, row_data in enumerate(data):
+                    for col, col_data in enumerate(row_data):
+                        if col_data is not None:
+                            if cells_format is None:
+                                worksheet.write(row, col, col_data)
+                            else:
+                                worksheet.write(
+                                    row,
+                                    col,
+                                    col_data,
+                                    workbook.add_format(cells_format[row][col]),
+                                )
 
-            sheet_simple = book.sheets.add("总览", after=sheet_overview)
-            sheet_simple[0, 0].value = sheet_simple_list
+            # workbook.read_only_recommended()
+            workbook.set_properties(
+                {
+                    "title": info["title"],
+                    "author": "; ".join(
+                        [re.sub("( ?<.+>)", "", author) for author in info["authors"]]
+                    ),
+                    "comments": "Created with Python and XlsxWriter",
+                }
+            )
+            for k, v in info["data"].items():
+                if type(v) == list:
+                    workbook.set_custom_property(k, "; ".join(v))
+                else:
+                    workbook.set_custom_property(k, v)
 
-            for key in sheets_detail_dict:
-                sheet = book.sheets.add(key, after=book.sheets[-1])
-                sheet[0, 0].value = sheets_detail_dict[key]
+            overview.worksheet = workbook.add_worksheet("概观")
+            simple.worksheet = workbook.add_worksheet("总览")
 
             if self.__style:
                 self._info("style formatting...")
 
-                def add_title_border(
-                    range: xw.Range, weight: int = XlBorderWeight.xlMedium
+                from .utils import (
+                    find_index,
+                    find_indices,
+                    get_column_width,
+                    get_end_cell_number,
+                    get_skip_next_cell_number,
+                    set_column_cell_format,
+                    set_region_cells_format,
+                )
+
+                def merge_range(
+                    worksheet: Workbook.worksheet_class,
+                    row_num: int,
+                    first_col: int,
+                    last_col: int,
+                    cell_format: dict[str, Any],
                 ):
-                    range.api.HorizontalAlignment = XlHAlign.xlHAlignCenter
-                    range.api.Borders.Weight = weight
+                    range_cell_format = overview.cells_format[row_num][first_col]
+                    if range_cell_format is None:
+                        raise ValueError(
+                            f"range_cell_format_props(row_num: {row_num}, column_num: {first_col}) is None!"
+                        )
+                    range_cell_format.update(cell_format)
+                    worksheet.merge_range(
+                        row_num,
+                        first_col,
+                        row_num,
+                        last_col,
+                        "",
+                        workbook.add_format(range_cell_format),
+                    )
 
-                # 设置字体，耗时操作
-                for sheet in book.sheets:
-                    sheet.cells.font.name = self.__FONT_NAME
-                # 先设置字体大小，会在 autofit() 时计算宽度
-                sheet_overview.cells.font.size = 14
+                # https://xlsxwriter.readthedocs.io/format.html
+                cell_format_props = Namespace(
+                    center={"align": "center", "valign": "vcenter"},
+                    border={"border": 1},
+                    title={"align": "center", "valign": "vcenter", "border": 2},
+                    font_bold={"bold": True},
+                    right={"align": "right"},
+                )
 
-                for y, l in enumerate(sheet_overview_list):
-                    for x in self.__find_indices(l, "Index"):
-                        sheet_overview[y, x].expand().autofit()
-                        name_range = sheet_overview[:, x + 1]
-                        name_range.api.HorizontalAlignment = XlHAlign.xlHAlignCenter
-
-                        end_cell = sheet_overview[y, x].end("right")
-
-                        if type(sheet_overview[y - 1, x].value) == str:
-                            region_range = sheet_overview[y, x].current_region
-                            region_range.api.Borders.LineStyle = (
-                                XlLineStyle.xlContinuous
-                            )
-
-                            title_range = sheet_overview[y - 1, x : end_cell.column]
-                            title_range.merge()
-                            add_title_border(title_range)
-                        else:
-                            region_range: xw.Range = sheet_overview[y, x].expand()
-                            region_range.api.Borders.LineStyle = (
-                                XlLineStyle.xlContinuous
-                            )
-
-                        if "Merged" in str(sheet_overview[y - 1, x].value):
-                            commands_range = sheet_overview[:, x + 5]
-                            commands_range.api.Font.Bold = True
-                        else:
-                            words_range = sheet_overview[:, x + 2]
-                            words_range.api.Font.Bold = True
-
-                        title_range = sheet_overview[y, x : end_cell.column]
-                        add_title_border(title_range)
-
-                cell_all = sheet_overview[0, 0].end("down").end("down")
-                cell_all.current_region.autofit()
-                sheet_overview[1:, 0].autofit()
-                cell_all_right = cell_all.current_region.last_cell
-
-                sheet_overview[:, 0].api.HorizontalAlignment = XlHAlign.xlHAlignRight
-                cell_right: xw.Range = sheet_overview[0, 0].expand().last_cell
-                for y in range(cell_right.row):
-                    value = str(sheet_overview[y, cell_right.column].value)
-                    if "http" in value:
-                        sheet_overview[y, cell_right.column].add_hyperlink(value)
-
-                    region_range = sheet_overview[
-                        y, cell_right.column : cell_all_right.column
+                # 设置 sheet_overview 表单中每个单元格相应的格式
+                overview.cells_format = [
+                    [
+                        (
+                            {
+                                "font_name": self.__FONT_NAME,
+                                "font_size": 14,
+                            }
+                            if col_data is not None
+                            else None
+                        )
+                        for col_data in row_data
                     ]
-                    region_range.merge()
-                    region_range.api.Borders.LineStyle = XlLineStyle.xlContinuous
+                    for row_data in overview.data
+                ]
 
-                region_range: xw.Range = sheet_overview[0, 0].expand()
-                region_range.api.Borders.LineStyle = XlLineStyle.xlContinuous
-
-                title_range = sheet_overview[0, 0 : cell_all_right.column]
-                title_range.merge()
-                add_title_border(title_range)
-
-                sheet_simple.autofit()
-                for y, l in enumerate(sheet_simple_list):
-                    for x in self.__find_indices(l, self.__WORDS):
-                        rest_title_range = sheet_simple[y, x : x + 4]
-                        rest_title_range.api.HorizontalAlignment = (
-                            XlHAlign.xlHAlignCenter
+                for row, row_data in enumerate(overview.data):
+                    for idx_column in find_indices(row_data, "Index"):
+                        # Name column: Horizontal Alignment Center
+                        set_column_cell_format(
+                            overview.cells_format,
+                            idx_column + 1,
+                            cell_format_props.center,
                         )
 
-                for i in range(math.ceil(len(sheet_simple_list[0]) / 8)):
-                    # Reduce communicate with excel's times
-                    sheet_simple[:, i * 8].api.HorizontalAlignment = (
-                        XlHAlign.xlHAlignRight
+                        # Index region: Border Line Style
+                        region_down_end_cell_row = get_end_cell_number(
+                            overview.data, row, idx_column, "down"
+                        )
+                        region_right_end_cell_column = get_end_cell_number(
+                            overview.data, row, idx_column, "right"
+                        )
+                        set_region_cells_format(
+                            overview.cells_format,
+                            row,
+                            idx_column,
+                            region_down_end_cell_row,
+                            region_right_end_cell_column,
+                            cell_format_props.border,
+                        )
+
+                        # Index range: Title Style
+                        set_region_cells_format(
+                            overview.cells_format,
+                            row,
+                            idx_column,
+                            row,
+                            region_right_end_cell_column,
+                            cell_format_props.title,
+                        )
+
+                        range_column = find_index(
+                            row_data, self.__WORDS, idx_column + 1
+                        )
+
+                        # 带标题的单元格列表
+                        if (
+                            (title_row := row - 1) >= 0
+                            and type(overview.data[title_row][idx_column]) == str
+                            and overview.data[title_row][idx_column + 1] is None
+                        ):
+                            merge_range(
+                                overview.worksheet,
+                                title_row,
+                                idx_column,
+                                region_right_end_cell_column,
+                                cell_format_props.title,
+                            )
+
+                            # Title column: Font Bold
+                            title_text = overview.data[title_row][idx_column]
+                            if "Merged" in title_text:
+                                range_column = find_index(
+                                    row_data, self.__COMMANDS, idx_column + 1
+                                )
+
+                        set_column_cell_format(
+                            overview.cells_format,
+                            range_column,
+                            cell_format_props.font_bold,
+                        )
+
+                # First column: Horizontal Alignment Right
+                set_column_cell_format(
+                    cells_format=overview.cells_format,
+                    column_num=0,
+                    cell_format=cell_format_props.right,
+                )
+
+                # Cells 'ALL' region:
+                region_all_right_end_cell_column = get_end_cell_number(
+                    overview.data,
+                    get_end_cell_number(
+                        overview.data,
+                        get_skip_next_cell_number(overview.data, 0, 0, "down"),
+                        0,
+                        "down",
+                    ),
+                    0,
+                    "right",
+                )
+
+                # Cells 'Title' region:
+                region_title_down_end_cell_row = get_end_cell_number(
+                    cells=overview.data,
+                    row_num=0,
+                    col_num=0,
+                    direction="down",
+                )
+                region_title_right_end_cell_column = get_end_cell_number(
+                    cells=overview.data,
+                    row_num=region_title_down_end_cell_row,
+                    col_num=0,
+                    direction="right",
+                )
+                for row in range(1, region_title_down_end_cell_row + 1):
+                    merge_range(
+                        overview.worksheet,
+                        row,
+                        region_title_right_end_cell_column,
+                        region_all_right_end_cell_column,
+                        cell_format_props.border,
                     )
-                    name_range = sheet_simple[:, i * 8 + 2]
-                    name_range.api.HorizontalAlignment = XlHAlign.xlHAlignCenter
+
+                # Title region: Border Line Style
+                set_region_cells_format(
+                    cells_format=overview.cells_format,
+                    first_row_num=0,
+                    first_col_num=0,
+                    last_row_num=region_title_down_end_cell_row,
+                    last_col_num=region_title_right_end_cell_column,
+                    cell_format=cell_format_props.border,
+                )
+                merge_range(
+                    worksheet=overview.worksheet,
+                    row_num=0,
+                    first_col=0,
+                    last_col=region_all_right_end_cell_column,
+                    cell_format=cell_format_props.title,
+                )
+
+                # Autofit
+                for column_num in range(len(overview.data[0])):
+                    cell_format = overview.cells_format[0][column_num]
+                    font_path = self.__font_path[
+                        cell_format is not None and cell_format.get("bold", False)
+                    ]
+
+                    # Skip merged cells
+                    match column_num:
+                        case 1:
+                            start_row_num = 7
+                        case _:
+                            start_row_num = 1
+
+                    # column width in character units.
+                    overview.worksheet.set_column(
+                        column_num,
+                        column_num,
+                        get_column_width(
+                            overview.data, column_num, font_path, 14, start_row_num
+                        ),
+                    )
+
+                write_worksheet(
+                    overview.worksheet, overview.data, overview.cells_format
+                )
+
+                # 设置 sheet_simple 表单中每个单元格相应的格式
+                simple.cells_format = [
+                    [
+                        (
+                            {
+                                "font_name": self.__FONT_NAME,
+                                "font_size": 11,
+                            }
+                            if col_data is not None
+                            else None
+                        )
+                        for col_data in row_data
+                    ]
+                    for row_data in simple.data
+                ]
+
+                for row, row_data in enumerate(simple.data):
+                    for idx_column in find_indices(row_data, self.__WORDS):
+                        region_right_end_cell_column = get_end_cell_number(
+                            simple.data, row, idx_column, "right"
+                        )
+                        set_region_cells_format(
+                            cells_format=simple.cells_format,
+                            first_row_num=row,
+                            first_col_num=idx_column,
+                            last_row_num=row,
+                            last_col_num=region_right_end_cell_column,
+                            cell_format=cell_format_props.center,
+                        )
+
+                        # Left column: Horizontal Alignment Right
+                        region_left_skip_next_cell_column = get_skip_next_cell_number(
+                            simple.data, row, idx_column, "left"
+                        )
+                        set_column_cell_format(
+                            cells_format=simple.cells_format,
+                            column_num=region_left_skip_next_cell_column,
+                            cell_format=cell_format_props.right,
+                        )
+
+                        # Title column: Horizontal Alignment Center
+                        set_column_cell_format(
+                            cells_format=simple.cells_format,
+                            column_num=idx_column - 1,
+                            cell_format=cell_format_props.center,
+                        )
+
+                # Autofit
+                for column_num in range(len(simple.data[0])):
+                    cell_format = simple.cells_format[0][column_num]
+                    font_path = self.__font_path[0]
+
+                    # column width in character units.
+                    simple.worksheet.set_column(
+                        column_num,
+                        column_num,
+                        get_column_width(simple.data, column_num, font_path, 11),
+                    )
+
+                write_worksheet(simple.worksheet, simple.data, simple.cells_format)
 
                 self._info("done.", end=True)
+            else:
+                write_worksheet(overview.worksheet, overview.data)
+                write_worksheet(simple.worksheet, simple.data)
 
-            sheet_overview.activate()
+            for key in sheets_detail_dict:
+                write_worksheet(workbook.add_worksheet(key), sheets_detail_dict[key])
 
-            book.save(self.__xlsx_file)
+            overview.worksheet.activate()
+
             self._info("Done.", end=True)
 
         return self.__xlsx_file
-
-    def __get_data(self, output_txt: str, dic: dict, tab_time: int) -> str:
-        info_keys = list(dic["info"].keys())
-        info_keys.remove("counter")
-        if dic["info"]["words"] + dic["info"]["punctuation"] > 0:
-            if self.__show_counter:
-                for k in info_keys:
-                    output_txt += f"{',' * tab_time}{k},{dic['info'][k]}\n"
-                sorted_counter_items = sorted(
-                    dic["info"]["counter"].items(),
-                    # key=lambda item: item[1]["words"] + item[1]["punctuation"],
-                    key=lambda item: item[1]["words"],
-                    reverse=True,
-                )
-                output_txt += f"{',' * tab_time}Index,Name,Words,Punctuation\n"
-                for index, item in enumerate(sorted_counter_items[:10]):
-                    output_txt += f"{',' * tab_time}{index + 1},{item[0]},{item[1]['words']},{item[1]['punctuation']}\n"
-            else:
-                content_bar = ""
-                for k in info_keys:
-                    content_bar += f"{dic['info'][k]},"
-                output_txt += f"{content_bar},\n"
-        if len(dic["items"]) > 1:
-            if self.__show_counter:
-                for key in dic["items"]:
-                    txt = self.__get_data("", dic["items"][key], tab_time + 1)
-                    if len(txt):
-                        output_txt += f'{"," * tab_time}|{key}|\n'
-                        output_txt += txt
-            else:
-                for key in dic["items"]:
-                    if "name" not in dic["items"][key]["info"]:
-                        continue
-                    txt = self.__get_data("", dic["items"][key], tab_time + 1)
-                    if len(txt):
-                        if tab_time == 0:
-                            output_txt += "\n\n"
-                        elif tab_time == 1:
-                            title_bar = ""
-                            for k in info_keys:
-                                title_bar += f"{k},"
-                            output_txt += f"\n{',' * (tab_time + 2)}{title_bar}\n"
-                        output_txt += f"{',' * tab_time}'{key}"
-                        output_txt += f"{',' * (3 - tab_time)}{txt}"
-        return output_txt
-
-    def gen_csv(self) -> Path:
-        output_txt = self.__get_data("", self.data["count"], 0)
-
-        if self.__show_total:
-            output_txt += "\n"
-            story_dict_list = []
-            for key in self.data["count"]["items"]:
-                dic: dict[str, dict] = self.data["count"]["items"][key]
-                keys = list(dic["items"].keys())
-                output_txt += f'"{key}"\n'
-                sorted_keys = sorted(
-                    keys,
-                    # key=lambda k: dic[k]["info"]["words"] + dic[k]["info"]["punctuation"],
-                    key=lambda k: dic["items"][k]["info"]["words"],
-                    reverse=True,
-                )
-                output_txt += f",Index,Name,Words,Punctuation,Commands\n"
-                for index, k in enumerate(sorted_keys):
-                    if "name" in dic["items"][k]["info"]:
-                        name = dic["items"][k]["info"]["name"]
-                        story_dict_list.append(dic["items"][k])
-                    else:
-                        name = k
-                    output_txt += f",{index + 1},{name},{dic['items'][k]['info']['words']},{dic['items'][k]['info']['punctuation']},{dic['items'][k]['info']['commands']}\n"
-
-            output_txt += "\n"
-            output_txt += "Commands\n"
-            output_txt += f",Index,Name,Words,Punctuation,Commands\n"
-            sorted_story_dict_list = sorted(
-                story_dict_list,
-                key=lambda dic: dic["info"]["commands"],
-                reverse=True,
-            )
-            for index, dic in enumerate(sorted_story_dict_list):
-                output_txt += f",{index + 1},{dic['info']['name']},{dic['info']['words']},{dic['info']['punctuation']},{dic['info']['commands']}\n"
-
-            output_txt += "\n"
-            output_txt += "Counter\n"
-            output_txt += f",Index,Name,Words,Punctuation\n"
-            sorted_counter_items = sorted(
-                self.data["count"]["info"]["counter"].items(),
-                key=lambda item: item[1]["words"],
-                reverse=True,
-            )
-            for index, item in enumerate(sorted_counter_items):
-                output_txt += f",{index + 1},{item[0]},{item[1]['words']},{item[1]['punctuation']}\n"
-
-        self.__csv_file.write_text(output_txt)
-
-        return self.__csv_file

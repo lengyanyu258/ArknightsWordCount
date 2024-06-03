@@ -1,8 +1,9 @@
 import json
 import pickle
-from tqdm import tqdm
-from pathlib import Path
 from argparse import Namespace
+from pathlib import Path
+
+from tqdm import tqdm
 
 from .count import Count
 from .dump import Dump
@@ -157,12 +158,7 @@ class GameData(Count, Dump):
     def dump(self, info: dict) -> Path:
         self._info("start dumping...")
 
-        import platform
-
-        if platform.system().lower() in ["windows", "darwin"]:
-            dump_file = self.gen_excel(info)
-        else:
-            dump_file = self.gen_csv()
+        dump_file = self.gen_excel(info)
 
         self._info("done.", end=True)
 

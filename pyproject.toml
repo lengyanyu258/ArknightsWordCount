@@ -1,16 +1,18 @@
 [tool.poetry]
 name = "arknights-word-count"
-version = "2.4.3"
+version = "3.0.0"
 description = "《明日方舟》字词统计"
 authors = ["Shawn Sun <lengyanyu258@outlook.com>"]
 license = "MIT"
 readme = "README.md"
 
+# https://python-poetry.org/docs/dependency-specification/#version-constraints
 [tool.poetry.dependencies]
-python = "^3.11"
-xlwings = { version = "*", extras = ["all"] }
+python = "~3.11.9"
 tqdm = "*"
 zhon = "*"
+XlsxWriter = "^3.2.0"
+pillow = "^10.3.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "*"
