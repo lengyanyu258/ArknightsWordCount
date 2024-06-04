@@ -111,7 +111,7 @@ def get_column_width(
     font_size: int,
     start_row_num: int = 0,
 ) -> float:
-    # column width in character units.
+    """column width but in character units."""
 
     text_list = [
         str(cells[row_num][column_num])
@@ -119,12 +119,15 @@ def get_column_width(
         if cells[row_num][column_num] is not None
     ]
 
-    length = 0
-    if len(text_list):
+    if len(text_list) == 0:
+        # default Excel Cell width is 80 pixels (however, the increasement is not linear)
+        pixels_length = 80 * 64 / 125
+    else:
+        pixels_length = 0
         font = ImageFont.truetype(font_path, font_size)
         for text in text_list:
-            length = max(font.getlength(text), length)
-    else:
-        length = 80 * 64 / 125
+            # The getlength() function is correct, we can get approximate correct pixels number.
+            pixels_length = max(font.getlength(text), pixels_length)
 
-    return length / 5
+    # Assume per character unit width is 5 pixels. (for this font)
+    return pixels_length / 5

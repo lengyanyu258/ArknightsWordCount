@@ -1,5 +1,4 @@
 import datetime
-import math
 import re
 from argparse import Namespace
 from itertools import product
@@ -30,8 +29,9 @@ class Dump(Data):
         self.__merge_names: list[list[str]] = config.merge_names
 
         today = f"{datetime.date.today():%Y%m%d}"
-        file_name = f"{self.__output_file.stem}_{today}"
-        self.__xlsx_file = self.__output_file.with_name(f"{file_name}.xlsx")
+        self.__xlsx_file = self.__output_file.with_name(
+            f"{self.__output_file.stem}_{today}.xlsx"
+        )
 
         self.__debug: bool = args.debug
         self.__style: bool = args.style or args.publish

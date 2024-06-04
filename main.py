@@ -1,4 +1,4 @@
-from config import Config
+from config import Config, filename
 
 
 def main():
@@ -36,12 +36,11 @@ def main():
         "authors": Config.info["authors"],
     }
     dump_file = game_data.dump(info)
+
     if args.publish:
-        # remove old files
-        [
+        # remove old xlsx files
+        for file_path in Path(Config.xlsx_file_path).parent.glob("*.xlsx"):
             file_path.unlink()
-            for file_path in Path(Config.xlsx_file_path).parent.glob("*.xlsx")
-        ]
 
         # add new files
         published_file = Path(Config.xlsx_file_path)
@@ -55,8 +54,8 @@ def main():
         index_html_file = published_file.with_name("index.html")
         index_html_file.write_text(
             re.sub(
-                r"arknights-word-count_\d+\.xlsx",
-                dump_file.name,
+                rf"{filename}_?\d*\.xlsx",
+                alternative_file.name,
                 index_html_file.read_text(encoding="utf-8"),
             ),
             encoding="utf-8",
