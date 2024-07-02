@@ -3,7 +3,6 @@ import re
 from argparse import Namespace
 from itertools import product
 from pathlib import Path
-from typing import Any, Optional
 
 from .data import Data
 
@@ -21,12 +20,19 @@ class Dump(Data):
         args: Namespace,
     ):
         self.__FONT_NAME: str = config.FONT_NAME
-        self.__font_path: tuple[str] = config.font_path
         self.__output_file = Path(config.output_file_path)
         self.__name_prefix: list[str] = config.name_prefix
         self.__name_suffix: list[str] = config.name_suffix
         self.__erase_names: list[str] = config.erase_names
         self.__merge_names: list[list[str]] = config.merge_names
+
+        # https://mirrors.tuna.tsinghua.edu.cn/github-release/be5invis/Sarasa-Gothic/LatestRelease/SarasaMonoSlabSC-TTF-Unhinted-1.0.13.7z
+        self.__font_path: dict[str, dict[str, str]] = {
+            self.__FONT_NAME: {
+                "regular": "./tmp/SarasaMonoSlabSC-Regular.ttf",
+                "bold": "./tmp/SarasaMonoSlabSC-Bold.ttf",
+            }
+        }
 
         today = f"{datetime.date.today():%Y%m%d}"
         self.__xlsx_file = self.__output_file.with_name(
@@ -121,11 +127,10 @@ class Dump(Data):
                     sheet_list[index] += content_bar
                 except IndexError:
                     sheet_list.append([None] * len_sheet_bar + content_bar)
-            else:
-                len_amend_sheet = len(sheet_list[0]) - len_sheet_bar
-                content_bar = [None] * len_amend_sheet
-                for bar in sheet_list[len(sheet) :]:
-                    bar += content_bar
+            len_amend_sheet = len(sheet_list[0]) - len_sheet_bar
+            content_bar = [None] * len_amend_sheet
+            for bar in sheet_list[len(sheet) :]:
+                bar += content_bar
         return sheet_list
 
     def __amend_sheet_list(self, sheet_list: list[list]):
@@ -178,7 +183,7 @@ class Dump(Data):
 
         sheet_list.append([info["title"]])
         for k, v in info["data"].items():
-            if type(v) == list:
+            if isinstance(v, list):
                 append_list(k, v[0])
                 for i in v[1:]:
                     sheet_list.append([None, i])
@@ -286,16 +291,14 @@ class Dump(Data):
                 self.__gen_detail_data(tab_time + 1, items_dict[key])
 
     def gen_excel(self, info: dict) -> Path:
-        from xlsxwriter import Workbook
+        from .excel import CellFormatProperties as Props
+        from .excel import Sheet, Workbook
 
-        sheets_detail_dict = {}
+        sheets_overview_list = []
         sheets_simple_list = []
-
-        overview = Namespace()
-        simple = Namespace()
+        sheets_detail_dict = {}
 
         self.__merge_counter_dict(self.data["count"]["info"]["counter"])
-        sheets_overview_list = []
         sheet_overview_list = []
         self.__add_info_data(info, sheet_overview_list)
         sheet_overview_list.append(["ALL"])
@@ -327,45 +330,23 @@ class Dump(Data):
                         info_dict[key] += story_dict["info"][key]
                 else:
                     storys_overview_dict["items"][story_key] = story_dict
-        else:
-            sheet_overview_list = [["Merged"]]
-            self.__gen_overview_data(
-                sheet_overview_list, storys_overview_dict, "commands"
-            )
-            self.__amend_sheet_list(sheet_overview_list)
-            sheets_overview_list.append(sheet_overview_list)
 
-            sheet_overview_list = [["Counter"]]
-            self.__gen_sorted_counter_data(
-                0, self.data["count"]["info"], sheet_overview_list, None, False
-            )
-            self.__amend_sheet_list(sheet_overview_list)
-            sheets_overview_list.append(sheet_overview_list)
+        sheet_overview_list = [["Merged"]]
+        self.__gen_overview_data(sheet_overview_list, storys_overview_dict, "commands")
+        self.__amend_sheet_list(sheet_overview_list)
+        sheets_overview_list.append(sheet_overview_list)
 
-            overview.data = self.__merge_sheets_list(sheets_overview_list)
-            simple.data = self.__merge_sheets_list(sheets_simple_list)
+        sheet_overview_list = [["Counter"]]
+        self.__gen_sorted_counter_data(
+            0, self.data["count"]["info"], sheet_overview_list, None, False
+        )
+        self.__amend_sheet_list(sheet_overview_list)
+        sheets_overview_list.append(sheet_overview_list)
 
         with Workbook(self.__xlsx_file) as workbook:
             self._info("Writing to excel...")
 
-            def write_worksheet(
-                worksheet: Workbook.worksheet_class,
-                data: list[list],
-                cells_format: Optional[list[list]] = None,
-            ):
-                for row, row_data in enumerate(data):
-                    for col, col_data in enumerate(row_data):
-                        if col_data is not None:
-                            if cells_format is None:
-                                worksheet.write(row, col, col_data)
-                            else:
-                                worksheet.write(
-                                    row,
-                                    col,
-                                    col_data,
-                                    workbook.add_format(cells_format[row][col]),
-                                )
-
+            ## 设置 Workbook 文档属性
             # workbook.read_only_recommended()
             workbook.set_properties(
                 {
@@ -377,294 +358,119 @@ class Dump(Data):
                 }
             )
             for k, v in info["data"].items():
-                if type(v) == list:
+                if isinstance(v, list):
                     workbook.set_custom_property(k, "; ".join(v))
                 else:
                     workbook.set_custom_property(k, v)
 
-            overview.worksheet = workbook.add_worksheet("概观")
-            simple.worksheet = workbook.add_worksheet("总览")
+            ## 新增表单
+            overview = Sheet(
+                workbook=workbook,
+                name="概观",
+                data=self.__merge_sheets_list(sheets_overview_list),
+                default_format_props={
+                    "font_name": self.__FONT_NAME,
+                    "font_size": 14,
+                },
+                other_props={"font_path": self.__font_path},
+            )
+            simple = Sheet(
+                workbook=workbook,
+                name="总览",
+                data=self.__merge_sheets_list(sheets_simple_list),
+                default_format_props={
+                    "font_name": self.__FONT_NAME,
+                    # The default font_size is 11
+                    # "font_size": 11,
+                },
+                other_props={"font_path": self.__font_path},
+            )
 
             if self.__style:
                 self._info("style formatting...")
 
-                from .utils import (
-                    find_index,
-                    find_indices,
-                    get_column_width,
-                    get_end_cell_number,
-                    get_skip_next_cell_number,
-                    set_column_cell_format,
-                    set_region_cells_format,
-                )
+                from .utils import find_index, find_indices
 
-                def merge_range(
-                    worksheet: Workbook.worksheet_class,
-                    row_num: int,
-                    first_col: int,
-                    last_col: int,
-                    cell_format: dict[str, Any],
-                ):
-                    range_cell_format = overview.cells_format[row_num][first_col]
-                    if range_cell_format is None:
-                        raise ValueError(
-                            f"range_cell_format_props(row_num: {row_num}, column_num: {first_col}) is None!"
-                        )
-                    range_cell_format.update(cell_format)
-                    worksheet.merge_range(
-                        row_num,
-                        first_col,
-                        row_num,
-                        last_col,
-                        "",
-                        workbook.add_format(range_cell_format),
-                    )
-
-                # https://xlsxwriter.readthedocs.io/format.html
-                cell_format_props = Namespace(
-                    center={"align": "center", "valign": "vcenter"},
-                    border={"border": 1},
-                    title={"align": "center", "valign": "vcenter", "border": 2},
-                    font_bold={"bold": True},
-                    right={"align": "right"},
-                )
-
-                # 设置 sheet_overview 表单中每个单元格相应的格式
-                overview.cells_format = [
-                    [
-                        (
-                            {
-                                "font_name": self.__FONT_NAME,
-                                "font_size": 14,
-                            }
-                            if col_data is not None
-                            else None
-                        )
-                        for col_data in row_data
-                    ]
-                    for row_data in overview.data
-                ]
-
-                for row, row_data in enumerate(overview.data):
+                for row, row_data in enumerate(overview.cells):
                     for idx_column in find_indices(row_data, "Index"):
+                        overview[row, idx_column].expand().autofit()
+
                         # Name column: Horizontal Alignment Center
-                        set_column_cell_format(
-                            overview.cells_format,
-                            idx_column + 1,
-                            cell_format_props.center,
-                        )
+                        overview[:, idx_column + 1].set_format(Props.center)
 
                         # Index region: Border Line Style
-                        region_down_end_cell_row = get_end_cell_number(
-                            overview.data, row, idx_column, "down"
-                        )
-                        region_right_end_cell_column = get_end_cell_number(
-                            overview.data, row, idx_column, "right"
-                        )
-                        set_region_cells_format(
-                            overview.cells_format,
-                            row,
-                            idx_column,
-                            region_down_end_cell_row,
-                            region_right_end_cell_column,
-                            cell_format_props.border,
-                        )
+                        overview[row, idx_column].expand().set_format(Props.border)
 
                         # Index range: Title Style
-                        set_region_cells_format(
-                            overview.cells_format,
-                            row,
-                            idx_column,
-                            row,
-                            region_right_end_cell_column,
-                            cell_format_props.title,
-                        )
-
-                        range_column = find_index(
-                            row_data, self.__WORDS, idx_column + 1
-                        )
+                        head_range = overview[row, idx_column].expand("right")
+                        head_range.set_format(Props.title)
 
                         # 带标题的单元格列表
+                        bold_column = find_index(row_data, self.__WORDS, idx_column + 1)
                         if (
                             (title_row := row - 1) >= 0
-                            and type(overview.data[title_row][idx_column]) == str
-                            and overview.data[title_row][idx_column + 1] is None
+                            and isinstance(overview.cells[title_row][idx_column], str)
+                            and overview.cells[title_row][idx_column + 1] is None
                         ):
-                            merge_range(
-                                overview.worksheet,
-                                title_row,
-                                idx_column,
-                                region_right_end_cell_column,
-                                cell_format_props.title,
-                            )
+                            overview[title_row, head_range.slice.col].merge(Props.title)
 
                             # Title column: Font Bold
-                            title_text = overview.data[title_row][idx_column]
-                            if "Merged" in title_text:
-                                range_column = find_index(
+                            head_text = overview.cells[title_row][idx_column]
+                            if "Merged" in head_text:
+                                bold_column = find_index(
                                     row_data, self.__COMMANDS, idx_column + 1
                                 )
 
-                        set_column_cell_format(
-                            overview.cells_format,
-                            range_column,
-                            cell_format_props.font_bold,
-                        )
+                        overview[:, bold_column].set_format(Props.font_bold)
 
                 # First column: Horizontal Alignment Right
-                set_column_cell_format(
-                    cells_format=overview.cells_format,
-                    column_num=0,
-                    cell_format=cell_format_props.right,
-                )
+                overview[:, 0].set_format(Props.right)
 
                 # Cells 'ALL' region:
-                region_all_right_end_cell_column = get_end_cell_number(
-                    overview.data,
-                    get_end_cell_number(
-                        overview.data,
-                        get_skip_next_cell_number(overview.data, 0, 0, "down"),
-                        0,
-                        "down",
-                    ),
-                    0,
-                    "right",
-                )
+                all_region = overview[0, 0].end("down", time=2).current_region
+                all_region.autofit()
+                overview[1:, 0].autofit()
 
-                # Cells 'Title' region:
-                region_title_down_end_cell_row = get_end_cell_number(
-                    cells=overview.data,
-                    row_num=0,
-                    col_num=0,
-                    direction="down",
-                )
-                region_title_right_end_cell_column = get_end_cell_number(
-                    cells=overview.data,
-                    row_num=region_title_down_end_cell_row,
-                    col_num=0,
-                    direction="right",
-                )
-                for row in range(1, region_title_down_end_cell_row + 1):
-                    merge_range(
-                        overview.worksheet,
-                        row,
-                        region_title_right_end_cell_column,
-                        region_all_right_end_cell_column,
-                        cell_format_props.border,
-                    )
+                # Cells 'Title' Range:
+                title_range = overview[0, 0].expand()
+                cell_col = title_range.last_cell.col
+                for row in range(title_range.last_cell.row):
+                    cell_row = row + 1
+                    if "http" in overview[cell_row, cell_col].value:
+                        overview[cell_row, cell_col].set_format({"hyperlink": True})
+                    overview[
+                        cell_row,
+                        cell_col : all_region.last_cell.col + 1,
+                    ].merge(Props.border)
 
                 # Title region: Border Line Style
-                set_region_cells_format(
-                    cells_format=overview.cells_format,
-                    first_row_num=0,
-                    first_col_num=0,
-                    last_row_num=region_title_down_end_cell_row,
-                    last_col_num=region_title_right_end_cell_column,
-                    cell_format=cell_format_props.border,
-                )
-                merge_range(
-                    worksheet=overview.worksheet,
-                    row_num=0,
-                    first_col=0,
-                    last_col=region_all_right_end_cell_column,
-                    cell_format=cell_format_props.title,
-                )
+                title_range.set_format(Props.border)
+                overview[0, : all_region.last_cell.col + 1].merge(Props.title)
 
-                # Autofit
-                for column_num in range(len(overview.data[0])):
-                    cell_format = overview.cells_format[0][column_num]
-                    font_path = self.__font_path[
-                        cell_format is not None and cell_format.get("bold", False)
-                    ]
+                overview.write()
 
-                    # Skip merged cells
-                    match column_num:
-                        case 1:
-                            start_row_num = 7
-                        case _:
-                            start_row_num = 1
-
-                    # column width in character units.
-                    overview.worksheet.set_column(
-                        column_num,
-                        column_num,
-                        get_column_width(
-                            overview.data, column_num, font_path, 14, start_row_num
-                        ),
-                    )
-
-                write_worksheet(
-                    overview.worksheet, overview.data, overview.cells_format
-                )
-
-                # 设置 sheet_simple 表单中每个单元格相应的格式
-                simple.cells_format = [
-                    [
-                        (
-                            {
-                                "font_name": self.__FONT_NAME,
-                                "font_size": 11,
-                            }
-                            if col_data is not None
-                            else None
-                        )
-                        for col_data in row_data
-                    ]
-                    for row_data in simple.data
-                ]
-
-                for row, row_data in enumerate(simple.data):
+                for row, row_data in enumerate(simple.cells):
                     for idx_column in find_indices(row_data, self.__WORDS):
-                        region_right_end_cell_column = get_end_cell_number(
-                            simple.data, row, idx_column, "right"
-                        )
-                        set_region_cells_format(
-                            cells_format=simple.cells_format,
-                            first_row_num=row,
-                            first_col_num=idx_column,
-                            last_row_num=row,
-                            last_col_num=region_right_end_cell_column,
-                            cell_format=cell_format_props.center,
-                        )
+                        simple[row, idx_column].expand("right").set_format(Props.center)
 
                         # Left column: Horizontal Alignment Right
-                        region_left_skip_next_cell_column = get_skip_next_cell_number(
-                            simple.data, row, idx_column, "left"
-                        )
-                        set_column_cell_format(
-                            cells_format=simple.cells_format,
-                            column_num=region_left_skip_next_cell_column,
-                            cell_format=cell_format_props.right,
-                        )
+                        left_cell = simple[row, idx_column].end("left", time=2).current
+                        simple[:, left_cell.col].set_format(Props.right)
 
                         # Title column: Horizontal Alignment Center
-                        set_column_cell_format(
-                            cells_format=simple.cells_format,
-                            column_num=idx_column - 1,
-                            cell_format=cell_format_props.center,
-                        )
+                        simple[:, idx_column - 1].set_format(Props.center)
 
                 # Autofit
-                for column_num in range(len(simple.data[0])):
-                    cell_format = simple.cells_format[0][column_num]
-                    font_path = self.__font_path[0]
-
-                    # column width in character units.
-                    simple.worksheet.set_column(
-                        column_num,
-                        column_num,
-                        get_column_width(simple.data, column_num, font_path, 11),
-                    )
-
-                write_worksheet(simple.worksheet, simple.data, simple.cells_format)
+                simple.autofit()
+                simple.write()
 
                 self._info("done.", end=True)
             else:
-                write_worksheet(overview.worksheet, overview.data)
-                write_worksheet(simple.worksheet, simple.data)
+                overview.write()
+                simple.write()
 
             for key in sheets_detail_dict:
-                write_worksheet(workbook.add_worksheet(key), sheets_detail_dict[key])
+                Sheet(workbook=workbook, name=key, data=sheets_detail_dict[key]).write()
 
             overview.worksheet.activate()
 

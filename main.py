@@ -137,7 +137,7 @@ if __name__ == "__main__":
     # strip ambiguous chars.
     data_dir_path = data_dir.encode().translate(None, delete='*?"<>|'.encode()).decode()
 
-    if sys.platform == "win32":
+    if sys.stdout.encoding == "gbk":
         from io import TextIOWrapper
 
         sys.stdout = TextIOWrapper(buffer=sys.stdout.buffer, encoding="gb18030")

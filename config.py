@@ -19,11 +19,6 @@ class Config:
 
     dump_config = Namespace(
         FONT_NAME="Sarasa Mono Slab SC",
-        # https://mirrors.tuna.tsinghua.edu.cn/github-release/be5invis/Sarasa-Gothic/LatestRelease/SarasaMonoSlabSC-TTF-Unhinted-1.0.13.7z
-        font_path=(
-            "./tmp/SarasaMonoSlabSC-Regular.ttf",
-            "./tmp/SarasaMonoSlabSC-Bold.ttf",
-        ),
         output_file_path=game_data_config.pickle_file_path,
         # 名称前缀
         name_prefix=["发言人", "审判官", "大审判官", "小", "“"],
