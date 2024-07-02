@@ -433,14 +433,11 @@ class Dump(Data):
 
                 # Cells 'Title' Range:
                 title_range = overview[0, 0].expand()
-                cell_col = title_range.last_cell.col
+                title_range[-1, -1].set_format({"hyperlink": True})
                 for row in range(title_range.last_cell.row):
-                    cell_row = row + 1
-                    if "http" in overview[cell_row, cell_col].value:
-                        overview[cell_row, cell_col].set_format({"hyperlink": True})
                     overview[
-                        cell_row,
-                        cell_col : all_region.last_cell.col + 1,
+                        row + 1,
+                        title_range.last_cell.col : all_region.last_cell.col + 1,
                     ].merge(Props.border)
 
                 # Title region: Border Line Style

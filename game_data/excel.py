@@ -106,9 +106,14 @@ class Range:
         self.__active_cell = self.__index.first
 
     def __getitem__(self, index_tuple: tuple[int | slice, int | slice]) -> Range:
+        index_range = (
+            self.sheet.__index
+            if self.__index.first == self.__index.last
+            else self.__index
+        )
         return Range(
             sheet=self.sheet,
-            index=parse_index_tuple(index_tuple, self.sheet.__index),
+            index=parse_index_tuple(index_tuple, index_range),
         )
 
     @property
