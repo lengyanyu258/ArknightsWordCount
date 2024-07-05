@@ -373,33 +373,13 @@ class Dump(Data):
                 workbook=workbook,
                 name="概观",
                 data=self.__merge_sheets_list(sheets_overview_list),
-                default_format_props={
-                    "font_name": self.__FONT_NAME,
-                    "font_size": 14,
-                },
-                other_props={"font_path": self.__font_path},
             )
             simple = Sheet(
                 workbook=workbook,
                 name="总览",
                 data=self.__merge_sheets_list(sheets_simple_list),
-                default_format_props={
-                    "font_name": self.__FONT_NAME,
-                    # The default font_size is 11
-                    # "font_size": 11,
-                },
-                other_props={"font_path": self.__font_path},
             )
-            counter = Sheet(
-                workbook=workbook,
-                name="台词",
-                data=sheet_counter_list,
-                default_format_props={
-                    "font_name": self.__FONT_NAME,
-                    "font_size": 14,
-                },
-                other_props={"font_path": self.__font_path},
-            )
+            counter = Sheet(workbook=workbook, name="台词", data=sheet_counter_list)
 
             if self.__style:
                 self._info("style formatting...")
@@ -407,6 +387,11 @@ class Dump(Data):
                 from .utils import find_index, find_indices
 
                 # 『概观』表单
+                overview.default_format_properties.update(
+                    {"font_name": self.__FONT_NAME, "font_size": 14}
+                )
+                overview.other_props.update({"font_path": self.__font_path})
+
                 for row, row_data in enumerate(overview.cells):
                     for idx_column in find_indices(row_data, "Index"):
                         overview[row, idx_column].expand().autofit()
@@ -461,6 +446,10 @@ class Dump(Data):
                 overview[0, : all_region.last_cell.col + 1].merge(Props.title)
 
                 # 『总览』表单
+                # The default font_size is 11
+                simple.default_format_properties.update({"font_name": self.__FONT_NAME})
+                simple.other_props.update({"font_path": self.__font_path})
+
                 for row, row_data in enumerate(simple.cells):
                     for idx_column in find_indices(row_data, self.__WORDS):
                         simple[row, idx_column].expand("right").set_format(Props.center)
@@ -476,6 +465,11 @@ class Dump(Data):
                 simple.autofit()
 
                 # 『台词』表单
+                counter.default_format_properties.update(
+                    {"font_name": self.__FONT_NAME, "font_size": 14}
+                )
+                counter.other_props.update({"font_path": self.__font_path})
+
                 counter.autofit()
                 for row, row_data in enumerate(counter.cells):
                     for idx_column in find_indices(row_data, "Index"):
