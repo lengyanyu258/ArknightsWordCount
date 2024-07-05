@@ -134,6 +134,11 @@ class Dump(Data):
         return sheet_list
 
     def __amend_sheet_list(self, sheet_list: list[list]):
+        """将数据表单修正为矩形
+
+        Args:
+            sheet_list (list[list]): 要被修正的数据表单
+        """
         len_counter = [len(i) for i in sheet_list]
         maximum_offset = max(len_counter)
 
@@ -296,6 +301,7 @@ class Dump(Data):
 
         sheets_overview_list = []
         sheets_simple_list = []
+        sheet_counter_list = []
         sheets_detail_dict = {}
 
         self.__merge_counter_dict(self.data["count"]["info"]["counter"])
@@ -336,12 +342,11 @@ class Dump(Data):
         self.__amend_sheet_list(sheet_overview_list)
         sheets_overview_list.append(sheet_overview_list)
 
-        sheet_overview_list = [["Counter"]]
+        sheet_counter_list.append(["台词量统计"])
         self.__gen_sorted_counter_data(
-            0, self.data["count"]["info"], sheet_overview_list, None, False
+            0, self.data["count"]["info"], sheet_counter_list, None, False
         )
-        self.__amend_sheet_list(sheet_overview_list)
-        sheets_overview_list.append(sheet_overview_list)
+        self.__amend_sheet_list(sheet_counter_list)
 
         with Workbook(self.__xlsx_file) as workbook:
             self._info("Writing to excel...")
@@ -385,12 +390,23 @@ class Dump(Data):
                 },
                 other_props={"font_path": self.__font_path},
             )
+            counter = Sheet(
+                workbook=workbook,
+                name="台词",
+                data=sheet_counter_list,
+                default_format_props={
+                    "font_name": self.__FONT_NAME,
+                    "font_size": 14,
+                },
+                other_props={"font_path": self.__font_path},
+            )
 
             if self.__style:
                 self._info("style formatting...")
 
                 from .utils import find_index, find_indices
 
+                # 『概观』表单
                 for row, row_data in enumerate(overview.cells):
                     for idx_column in find_indices(row_data, "Index"):
                         overview[row, idx_column].expand().autofit()
@@ -444,8 +460,7 @@ class Dump(Data):
                 title_range.set_format(Props.border)
                 overview[0, : all_region.last_cell.col + 1].merge(Props.title)
 
-                overview.write()
-
+                # 『总览』表单
                 for row, row_data in enumerate(simple.cells):
                     for idx_column in find_indices(row_data, self.__WORDS):
                         simple[row, idx_column].expand("right").set_format(Props.center)
@@ -459,13 +474,30 @@ class Dump(Data):
 
                 # Autofit
                 simple.autofit()
-                simple.write()
+
+                # 『台词』表单
+                counter.autofit()
+                for row, row_data in enumerate(counter.cells):
+                    for idx_column in find_indices(row_data, "Index"):
+                        # Name column: Horizontal Alignment Center
+                        counter[:, idx_column + 1].set_format(Props.center)
+                        # Index region: Border Line Style
+                        counter[row, idx_column].expand().set_format(Props.border)
+                        # Title column: Font Bold
+                        bold_column = find_index(row_data, self.__WORDS, idx_column + 1)
+                        counter[:, bold_column].set_format(Props.font_bold)
+                        # Index range: Title Style
+                        head_range = counter[row, idx_column].expand("right")
+                        head_range.set_format(Props.title)
+
+                        counter[row - 1, head_range.slice.col].merge(Props.title)
 
                 self._info("done.", end=True)
-            else:
-                overview.write()
-                simple.write()
 
+            # 将数据写回到表单
+            overview.write()
+            simple.write()
+            counter.write()
             for key in sheets_detail_dict:
                 Sheet(workbook=workbook, name=key, data=sheets_detail_dict[key]).write()
 
