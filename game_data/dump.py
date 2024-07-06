@@ -3,8 +3,10 @@ import re
 from argparse import Namespace
 from itertools import product
 from pathlib import Path
+from typing import Any
 
 from .data import Data
+from .excel import Sheet
 
 
 class Dump(Data):
@@ -43,6 +45,11 @@ class Dump(Data):
         self.__style: bool = args.style or args.publish
 
     def __merge_counter_dict(self, counter: dict[str, dict]):
+        """拆分、合并台词，整理台词量统计数据
+
+        Args:
+            counter (dict[str, dict]): 台词量统计数据
+        """
         # 分离名称
         for origin_name in list(counter.keys()):
             names = re.split(self.__split_pattern, origin_name)
@@ -117,23 +124,32 @@ class Dump(Data):
             if sum(counter_dict[merged_name].values()) > 0:
                 counter[merged_name] = counter_dict[merged_name]
 
-    def __merge_sheets_list(self, sheets: list[list[list]]) -> list[list]:
+    def __merge_sheets_list(
+        self, sheets: list[list[list[Any]]], add_pad: bool = True
+    ) -> list[list[Any]]:
+        """将多个表单数据按顺序依次合并为一个表单数据
+
+        Args:
+            sheets (list[list[list]]): 多个表单数据的列表，每个表单的数据都为矩形
+
+        Returns:
+            list[list]: 合并后的单个表单数据
+        """
         sheet_list = sheets[0]
         for sheet in sheets[1:]:
             len_sheet_bar = len(sheet_list[0])
             for index, bar in enumerate(sheet):
-                content_bar = [None] + bar
+                content_bar = ([None] if add_pad else []) + bar
                 try:
-                    sheet_list[index] += content_bar
+                    sheet_list[index].extend(content_bar)
                 except IndexError:
                     sheet_list.append([None] * len_sheet_bar + content_bar)
-            len_amend_sheet = len(sheet_list[0]) - len_sheet_bar
-            content_bar = [None] * len_amend_sheet
+            content_bar = [None] * (len(sheet[0]) + add_pad)
             for bar in sheet_list[len(sheet) :]:
-                bar += content_bar
+                bar.extend(content_bar)
         return sheet_list
 
-    def __amend_sheet_list(self, sheet_list: list[list]):
+    def __amend_sheet_list(self, sheet_list: list[list[Any]]):
         """将数据表单修正为矩形
 
         Args:
@@ -153,6 +169,15 @@ class Dump(Data):
         number: int | None = 10,
         is_show_counter: bool = True,
     ):
+        """生成按字词数排序的台词量统计
+
+        Args:
+            tab_time (int): 左侧留出空白单元格的次数
+            info_dict (dict[str, dict]): 统计数据
+            sheet_list (list): 需要被添加到的数据表单
+            number (int | None, optional): 要生成的总数. Defaults to 10.
+            is_show_counter (bool, optional): Print `Counter` cell left beside `Index` title. Defaults to True.
+        """
         sheet_list.append(
             [None] * tab_time
             + (["Counter"] if is_show_counter else [])
@@ -209,7 +234,7 @@ class Dump(Data):
             "commands": self.__COMMANDS,
         }
         for i in bar:
-            if i in info_dict and info_dict[i]:
+            if info_dict.get(i):
                 sheet_list.append([None] * tab_time + [bar[i], info_dict[i]])
 
         if len(info_dict["counter"]) != 1:
@@ -277,57 +302,182 @@ class Dump(Data):
             for k, i in item["items"].items():
                 append_list(k, i["info"])
 
-    def __gen_detail_data(self, tab_time: int, dic: dict[str, dict]):
-        # TODO: use horizontal format
-        info_dict: dict = dic["info"]
-        if info_dict["words"] + info_dict["punctuation"] > 0:
-            items_dict = dic["items"]
-            if len(items_dict) == 1:
-                if "name" in info_dict:
-                    # if "name" not in list(items_dict.values())[0]["info"]:
-                    self.__sheet_detail_list.append(
-                        [None] * tab_time + ["Title", info_dict["name"]]
-                    )
+    def __gen_detail_data(
+        self,
+        sheet_detail_list: list[list[Any]],
+        data_dict: dict[str, dict[str, dict[str, dict]]],
+    ):
+        """生成每个表单上的所有数据"""
+
+        def gen_story(tab_time: int, data: dict[str, dict[str, dict]]):
+            info_dict: dict = data["info"]
+            if info_dict["words"] + info_dict["punctuation"] <= 0:
+                return
+
+            if len(data["items"]) != 1:
+                # 2: 既有“行动前”又有“行动后”
+                # 0: 已到达最底层，输出该层信息
+                self.__gen_info_data(tab_time, info_dict, level_list)
             else:
-                self.__gen_info_data(tab_time, info_dict, self.__sheet_detail_list)
+                # 只包含单个节点（如“幕间”），只输出标题，不与下一层输出重复的 info data，以减轻文档大小
+                if "name" in info_dict:
+                    # if "name" not in list(data["items"].values())[0]["info"]:
+                    level_list.append([None] * tab_time + ["Title", info_dict["name"]])
 
-            for key in items_dict:
-                self.__sheet_detail_list.append([None] * tab_time + [key])
-                self.__gen_detail_data(tab_time + 1, items_dict[key])
+            for key in data["items"]:
+                level_list.append([None] * tab_time + [key])
+                gen_story(tab_time + 1, data["items"][key])
 
-    def gen_excel(self, info: dict) -> Path:
+        # 生成 info data
+        self.__gen_info_data(0, data_dict["info"], sheet_detail_list)
+
+        stories = data_dict["items"]
+        for story_name in stories:
+            story_list = [[[story_name]]]
+            # TODO: 30 -> sum()
+            self.__gen_info_data(1, stories[story_name]["info"], story_list[0], 30)
+            self.__amend_sheet_list(story_list[0])
+            for level_name in stories[story_name]["items"]:
+                level_list = [[level_name]]
+                gen_story(1, stories[story_name]["items"][level_name])
+                self.__amend_sheet_list(level_list)
+                story_list.append(level_list)
+            sheet_detail_list.append([])  # 空一行
+            sheet_detail_list.extend(self.__merge_sheets_list(story_list, False))
+
+    def __gen_sheet_style(self, overview: Sheet, simple: Sheet, counter: Sheet):
+        self._info("style formatting...")
+
         from .excel import CellFormatProperties as Props
-        from .excel import Sheet, Workbook
+        from .utils import find_index, find_indices
 
-        sheets_overview_list = []
-        sheets_simple_list = []
-        sheet_counter_list = []
-        sheets_detail_dict = {}
+        # 『概观』表单
+        overview.default_format_properties.update(
+            {"font_name": self.__FONT_NAME, "font_size": 14}
+        )
+        overview.other_props.update({"font_path": self.__font_path})
 
-        self.__merge_counter_dict(self.data["count"]["info"]["counter"])
-        sheet_overview_list = []
-        self.__add_info_data(info, sheet_overview_list)
-        sheet_overview_list.append(["ALL"])
-        self.__gen_info_data(0, self.data["count"]["info"], sheet_overview_list, 13)
-        self.__amend_sheet_list(sheet_overview_list)
-        sheets_overview_list.append(sheet_overview_list)
+        for row, row_data in enumerate(overview.cells):
+            for idx_column in find_indices(row_data, "Index"):
+                overview[row, idx_column].expand().autofit()
+
+                # Name column: Horizontal Alignment Center
+                overview[:, idx_column + 1].set_format(Props.center)
+
+                # Index region: Border Line Style
+                overview[row, idx_column].expand().set_format(Props.border)
+
+                # Index range: Title Style
+                head_range = overview[row, idx_column].expand("right")
+                head_range.set_format(Props.title)
+
+                # 带标题的单元格列表
+                bold_column = find_index(row_data, self.__WORDS, idx_column + 1)
+                if (
+                    (title_row := row - 1) >= 0
+                    and isinstance(overview.cells[title_row][idx_column], str)
+                    and overview.cells[title_row][idx_column + 1] is None
+                ):
+                    overview[title_row, head_range.slice.col].merge(Props.title)
+
+                    # Title column: Font Bold
+                    head_text = overview.cells[title_row][idx_column]
+                    if "Merged" in head_text:
+                        bold_column = find_index(
+                            row_data, self.__COMMANDS, idx_column + 1
+                        )
+
+                overview[:, bold_column].set_format(Props.font_bold)
+
+        # First column: Horizontal Alignment Right
+        overview[:, 0].set_format(Props.right)
+
+        # Cells 'ALL' region:
+        all_region = overview[0, 0].end("down", time=2).current_region
+        all_region.autofit()
+        overview[1:, 0].autofit()
+
+        # Cells 'Title' Range:
+        title_range = overview[0, 0].expand()
+        title_range[-1, -1].set_format({"hyperlink": True})
+        for row in range(title_range.last_cell.row):
+            overview[
+                row + 1,
+                title_range.last_cell.col : all_region.last_cell.col + 1,
+            ].merge(Props.border)
+
+        # Title region: Border Line Style
+        title_range.set_format(Props.border)
+        overview[0, : all_region.last_cell.col + 1].merge(Props.title)
+
+        # 『总览』表单
+        # The default font_size is 11
+        simple.default_format_properties.update({"font_name": self.__FONT_NAME})
+        simple.other_props.update({"font_path": self.__font_path})
+        simple.autofit()
+
+        for row, row_data in enumerate(simple.cells):
+            for idx_column in find_indices(row_data, self.__WORDS):
+                simple[row, idx_column].expand("right").set_format(Props.center)
+
+                # Left column: Horizontal Alignment Right
+                left_cell = simple[row, idx_column].end("left", time=2).current
+                simple[:, left_cell.col].set_format(Props.right)
+
+                # Title column: Horizontal Alignment Center
+                simple[:, idx_column - 1].set_format(Props.center)
+
+        # 『台词』表单
+        counter.default_format_properties.update(
+            {"font_name": self.__FONT_NAME, "font_size": 14}
+        )
+        counter.other_props.update({"font_path": self.__font_path})
+        counter.autofit()
+
+        idx_row = 1
+        idx_column = find_index(counter.cells[idx_row], "Index")
+        # Name column: Horizontal Alignment Center
+        counter[:, idx_column + 1].set_format(Props.center)
+        # Index region: Border Line Style
+        counter[idx_row, idx_column].expand().set_format(Props.border)
+        # Title column: Font Bold
+        bold_column = find_index(counter.cells[idx_row], self.__WORDS, idx_column + 1)
+        counter[:, bold_column].set_format(Props.font_bold)
+        # Index range: Title Style
+        head_range = counter[idx_row, idx_column].expand("right")
+        head_range.set_format(Props.title)
+        counter[idx_row - 1, head_range.slice.col].merge(Props.title)
+
+        self._info("done.", end=True)
+
+    def __gen_excel_data(
+        self,
+        sheets_overview_list: list,
+        sheets_simple_list: list,
+        sheets_detail_dict: dict,
+        sheet_counter_list: list,
+    ):
+        self._info("Generating data...")
+
         storys_overview_dict = {"items": {}}
 
         for entry_type, item_dict in self.data["count"]["items"].items():
-            self.__sheet_detail_list = [[entry_type]]
-            self.__gen_detail_data(0, item_dict)
-            self.__amend_sheet_list(self.__sheet_detail_list)
-            sheets_detail_dict[entry_type] = self.__sheet_detail_list
+            # 『概观』表单
+            sheet_overview_list = [[entry_type]]
+            self.__gen_overview_data(sheet_overview_list, item_dict, "words")
+            self.__amend_sheet_list(sheet_overview_list)
+            sheets_overview_list.append(sheet_overview_list)
 
+            # 『总览』表单
             sheet_simple_list = [[entry_type]]
             self.__gen_simple_data(sheet_simple_list, item_dict)
             self.__amend_sheet_list(sheet_simple_list)
             sheets_simple_list.append(sheet_simple_list)
 
-            sheet_overview_list = [[entry_type]]
-            self.__gen_overview_data(sheet_overview_list, item_dict, "words")
-            self.__amend_sheet_list(sheet_overview_list)
-            sheets_overview_list.append(sheet_overview_list)
+            sheet_detail_list = [[entry_type]]
+            self.__gen_detail_data(sheet_detail_list, item_dict)
+            self.__amend_sheet_list(sheet_detail_list)
+            sheets_detail_dict[entry_type] = sheet_detail_list
 
             for story_key, story_dict in item_dict["items"].items():
                 if story_key in storys_overview_dict["items"]:
@@ -347,6 +497,35 @@ class Dump(Data):
             0, self.data["count"]["info"], sheet_counter_list, None, False
         )
         self.__amend_sheet_list(sheet_counter_list)
+
+        self._info("Done.", end=True)
+
+    def dump_excel(self, info: dict) -> Path:
+        from xlsxwriter import Workbook
+
+        sheets_overview_list = []
+        sheets_simple_list = []
+        sheets_detail_dict = {}
+        sheet_counter_list = []
+
+        # 初始化台词量统计数据
+        self.__merge_counter_dict(self.data["count"]["info"]["counter"])
+
+        sheet_overview_list = []
+        # 添加文档首部信息
+        self.__add_info_data(info, sheet_overview_list)
+        # 添加总量统计信息
+        sheet_overview_list.append(["ALL"])
+        self.__gen_info_data(0, self.data["count"]["info"], sheet_overview_list, 13)
+        self.__amend_sheet_list(sheet_overview_list)
+        sheets_overview_list.append(sheet_overview_list)
+
+        self.__gen_excel_data(
+            sheets_overview_list,
+            sheets_simple_list,
+            sheets_detail_dict,
+            sheet_counter_list,
+        )
 
         with Workbook(self.__xlsx_file) as workbook:
             self._info("Writing to excel...")
@@ -382,111 +561,7 @@ class Dump(Data):
             counter = Sheet(workbook=workbook, name="台词", data=sheet_counter_list)
 
             if self.__style:
-                self._info("style formatting...")
-
-                from .utils import find_index, find_indices
-
-                # 『概观』表单
-                overview.default_format_properties.update(
-                    {"font_name": self.__FONT_NAME, "font_size": 14}
-                )
-                overview.other_props.update({"font_path": self.__font_path})
-
-                for row, row_data in enumerate(overview.cells):
-                    for idx_column in find_indices(row_data, "Index"):
-                        overview[row, idx_column].expand().autofit()
-
-                        # Name column: Horizontal Alignment Center
-                        overview[:, idx_column + 1].set_format(Props.center)
-
-                        # Index region: Border Line Style
-                        overview[row, idx_column].expand().set_format(Props.border)
-
-                        # Index range: Title Style
-                        head_range = overview[row, idx_column].expand("right")
-                        head_range.set_format(Props.title)
-
-                        # 带标题的单元格列表
-                        bold_column = find_index(row_data, self.__WORDS, idx_column + 1)
-                        if (
-                            (title_row := row - 1) >= 0
-                            and isinstance(overview.cells[title_row][idx_column], str)
-                            and overview.cells[title_row][idx_column + 1] is None
-                        ):
-                            overview[title_row, head_range.slice.col].merge(Props.title)
-
-                            # Title column: Font Bold
-                            head_text = overview.cells[title_row][idx_column]
-                            if "Merged" in head_text:
-                                bold_column = find_index(
-                                    row_data, self.__COMMANDS, idx_column + 1
-                                )
-
-                        overview[:, bold_column].set_format(Props.font_bold)
-
-                # First column: Horizontal Alignment Right
-                overview[:, 0].set_format(Props.right)
-
-                # Cells 'ALL' region:
-                all_region = overview[0, 0].end("down", time=2).current_region
-                all_region.autofit()
-                overview[1:, 0].autofit()
-
-                # Cells 'Title' Range:
-                title_range = overview[0, 0].expand()
-                title_range[-1, -1].set_format({"hyperlink": True})
-                for row in range(title_range.last_cell.row):
-                    overview[
-                        row + 1,
-                        title_range.last_cell.col : all_region.last_cell.col + 1,
-                    ].merge(Props.border)
-
-                # Title region: Border Line Style
-                title_range.set_format(Props.border)
-                overview[0, : all_region.last_cell.col + 1].merge(Props.title)
-
-                # 『总览』表单
-                # The default font_size is 11
-                simple.default_format_properties.update({"font_name": self.__FONT_NAME})
-                simple.other_props.update({"font_path": self.__font_path})
-
-                for row, row_data in enumerate(simple.cells):
-                    for idx_column in find_indices(row_data, self.__WORDS):
-                        simple[row, idx_column].expand("right").set_format(Props.center)
-
-                        # Left column: Horizontal Alignment Right
-                        left_cell = simple[row, idx_column].end("left", time=2).current
-                        simple[:, left_cell.col].set_format(Props.right)
-
-                        # Title column: Horizontal Alignment Center
-                        simple[:, idx_column - 1].set_format(Props.center)
-
-                # Autofit
-                simple.autofit()
-
-                # 『台词』表单
-                counter.default_format_properties.update(
-                    {"font_name": self.__FONT_NAME, "font_size": 14}
-                )
-                counter.other_props.update({"font_path": self.__font_path})
-
-                counter.autofit()
-                for row, row_data in enumerate(counter.cells):
-                    for idx_column in find_indices(row_data, "Index"):
-                        # Name column: Horizontal Alignment Center
-                        counter[:, idx_column + 1].set_format(Props.center)
-                        # Index region: Border Line Style
-                        counter[row, idx_column].expand().set_format(Props.border)
-                        # Title column: Font Bold
-                        bold_column = find_index(row_data, self.__WORDS, idx_column + 1)
-                        counter[:, bold_column].set_format(Props.font_bold)
-                        # Index range: Title Style
-                        head_range = counter[row, idx_column].expand("right")
-                        head_range.set_format(Props.title)
-
-                        counter[row - 1, head_range.slice.col].merge(Props.title)
-
-                self._info("done.", end=True)
+                self.__gen_sheet_style(overview, simple, counter)
 
             # 将数据写回到表单
             overview.write()

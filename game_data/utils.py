@@ -38,9 +38,9 @@ def check_index(index: int, index_range: Axis) -> int:
 
 
 def find_index(
-    list_to_check: list,
+    list_to_check: list[Any],
     item_to_find: Any,
-    start_col_num: int,
+    start_col_num: int = 0,
 ) -> int:
     for index, value in enumerate(list_to_check[start_col_num:], start_col_num):
         if value == item_to_find:

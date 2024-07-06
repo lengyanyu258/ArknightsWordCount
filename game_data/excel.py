@@ -350,6 +350,7 @@ class Range:
         return pixels_height + 1
 
     def autofit(self):
+        # TODO: 优化在 WSL1 下的性能表现（行、列排版占用 40s）
         font_name: str = self.sheet.default_format_properties.get(
             "font_name", Format().font_name
         )

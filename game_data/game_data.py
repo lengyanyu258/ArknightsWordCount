@@ -158,7 +158,7 @@ class GameData(Count, Dump):
     def dump(self, info: dict) -> Path:
         self._info("start dumping...")
 
-        dump_file = self.gen_excel(info)
+        dump_file = self.dump_excel(info)
 
         self._info("done.", end=True)
 
