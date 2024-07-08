@@ -50,3 +50,42 @@ def find_index(
 
 def find_indices(list_to_check: list, item_to_find: Any) -> list[int]:
     return [idx for idx, value in enumerate(list_to_check) if value == item_to_find]
+
+
+def amend_sheet_list(sheet_list: list[list[Any]]):
+    """将数据表单修正为矩形
+
+    Args:
+        sheet_list (list[list]): 要被修正的数据表单
+    """
+    len_counter = [len(i) for i in sheet_list]
+    maximum_offset = max(len_counter)
+
+    for i in range(len(sheet_list)):
+        sheet_list[i] += [None] * (maximum_offset - len_counter[i])
+
+
+def merge_sheets_list(
+    sheets: list[list[list[Any]]], add_pad: bool = True
+) -> list[list[Any]]:
+    """将多个表单数据按顺序依次合并为一个表单数据
+
+    Args:
+        sheets (list[list[list]]): 多个表单数据的列表，每个表单的数据都为矩形
+
+    Returns:
+        list[list]: 合并后的单个表单数据
+    """
+    sheet_list = sheets[0]
+    for sheet in sheets[1:]:
+        len_sheet_bar = len(sheet_list[0])
+        for index, bar in enumerate(sheet):
+            content_bar = ([None] if add_pad else []) + bar
+            try:
+                sheet_list[index].extend(content_bar)
+            except IndexError:
+                sheet_list.append([None] * len_sheet_bar + content_bar)
+        content_bar = [None] * (len(sheet[0]) + add_pad)
+        for bar in sheet_list[len(sheet) :]:
+            bar.extend(content_bar)
+    return sheet_list

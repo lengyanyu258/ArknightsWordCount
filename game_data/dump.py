@@ -7,6 +7,7 @@ from typing import Any
 
 from .data import Data
 from .excel import Sheet
+from .utils import amend_sheet_list, merge_sheets_list
 
 
 class Dump(Data):
@@ -124,43 +125,6 @@ class Dump(Data):
             if sum(counter_dict[merged_name].values()) > 0:
                 counter[merged_name] = counter_dict[merged_name]
 
-    def __merge_sheets_list(
-        self, sheets: list[list[list[Any]]], add_pad: bool = True
-    ) -> list[list[Any]]:
-        """将多个表单数据按顺序依次合并为一个表单数据
-
-        Args:
-            sheets (list[list[list]]): 多个表单数据的列表，每个表单的数据都为矩形
-
-        Returns:
-            list[list]: 合并后的单个表单数据
-        """
-        sheet_list = sheets[0]
-        for sheet in sheets[1:]:
-            len_sheet_bar = len(sheet_list[0])
-            for index, bar in enumerate(sheet):
-                content_bar = ([None] if add_pad else []) + bar
-                try:
-                    sheet_list[index].extend(content_bar)
-                except IndexError:
-                    sheet_list.append([None] * len_sheet_bar + content_bar)
-            content_bar = [None] * (len(sheet[0]) + add_pad)
-            for bar in sheet_list[len(sheet) :]:
-                bar.extend(content_bar)
-        return sheet_list
-
-    def __amend_sheet_list(self, sheet_list: list[list[Any]]):
-        """将数据表单修正为矩形
-
-        Args:
-            sheet_list (list[list]): 要被修正的数据表单
-        """
-        len_counter = [len(i) for i in sheet_list]
-        maximum_offset = max(len_counter)
-
-        for i in range(len(sheet_list)):
-            sheet_list[i] += [None] * (maximum_offset - len_counter[i])
-
     def __gen_sorted_counter_data(
         self,
         tab_time: int,
@@ -223,7 +187,12 @@ class Dump(Data):
         sheet_list.append([])
 
     def __gen_info_data(
-        self, tab_time: int, info_dict: dict, sheet_list: list, number: int | None = 10
+        self,
+        tab_time: int,
+        info_dict: dict,
+        sheet_list: list,
+        number: int | None = 10,
+        max_number: int | None = None,
     ):
         bar = {
             "name": "Title",
@@ -233,9 +202,15 @@ class Dump(Data):
             "ellipsis": self.__ELLIPSIS,
             "commands": self.__COMMANDS,
         }
+        # Including Title bar of `counter`.
+        bar_count = 1
         for i in bar:
             if info_dict.get(i):
+                bar_count += 1
                 sheet_list.append([None] * tab_time + [bar[i], info_dict[i]])
+
+        if max_number is not None:
+            number = max_number - bar_count
 
         if len(info_dict["counter"]) != 1:
             self.__gen_sorted_counter_data(tab_time, info_dict, sheet_list, number)
@@ -333,17 +308,25 @@ class Dump(Data):
 
         stories = data_dict["items"]
         for story_name in stories:
-            story_list = [[[story_name]]]
-            # TODO: 30 -> sum()
-            self.__gen_info_data(1, stories[story_name]["info"], story_list[0], 30)
-            self.__amend_sheet_list(story_list[0])
+            levels_list = []
             for level_name in stories[story_name]["items"]:
                 level_list = [[level_name]]
                 gen_story(1, stories[story_name]["items"][level_name])
-                self.__amend_sheet_list(level_list)
-                story_list.append(level_list)
+                amend_sheet_list(level_list)
+                levels_list.append(level_list)
+            story_list = merge_sheets_list(levels_list, False)
+            story_digest = [[story_name]]
+            self.__gen_info_data(
+                1,
+                stories[story_name]["info"],
+                story_digest,
+                max_number=len(story_list) - 1,
+            )
+            amend_sheet_list(story_digest)
             sheet_detail_list.append([])  # 空一行
-            sheet_detail_list.extend(self.__merge_sheets_list(story_list, False))
+            sheet_detail_list.extend(
+                merge_sheets_list([story_digest, story_list], False)
+            )
 
     def __gen_sheet_style(self, overview: Sheet, simple: Sheet, counter: Sheet):
         self._info("style formatting...")
@@ -465,18 +448,18 @@ class Dump(Data):
             # 『概观』表单
             sheet_overview_list = [[entry_type]]
             self.__gen_overview_data(sheet_overview_list, item_dict, "words")
-            self.__amend_sheet_list(sheet_overview_list)
+            amend_sheet_list(sheet_overview_list)
             sheets_overview_list.append(sheet_overview_list)
 
             # 『总览』表单
             sheet_simple_list = [[entry_type]]
             self.__gen_simple_data(sheet_simple_list, item_dict)
-            self.__amend_sheet_list(sheet_simple_list)
+            amend_sheet_list(sheet_simple_list)
             sheets_simple_list.append(sheet_simple_list)
 
             sheet_detail_list = [[entry_type]]
             self.__gen_detail_data(sheet_detail_list, item_dict)
-            self.__amend_sheet_list(sheet_detail_list)
+            amend_sheet_list(sheet_detail_list)
             sheets_detail_dict[entry_type] = sheet_detail_list
 
             for story_key, story_dict in item_dict["items"].items():
@@ -489,14 +472,14 @@ class Dump(Data):
 
         sheet_overview_list = [["Merged"]]
         self.__gen_overview_data(sheet_overview_list, storys_overview_dict, "commands")
-        self.__amend_sheet_list(sheet_overview_list)
+        amend_sheet_list(sheet_overview_list)
         sheets_overview_list.append(sheet_overview_list)
 
         sheet_counter_list.append(["台词量统计"])
         self.__gen_sorted_counter_data(
             0, self.data["count"]["info"], sheet_counter_list, None, False
         )
-        self.__amend_sheet_list(sheet_counter_list)
+        amend_sheet_list(sheet_counter_list)
 
         self._info("Done.", end=True)
 
@@ -517,7 +500,7 @@ class Dump(Data):
         # 添加总量统计信息
         sheet_overview_list.append(["ALL"])
         self.__gen_info_data(0, self.data["count"]["info"], sheet_overview_list, 13)
-        self.__amend_sheet_list(sheet_overview_list)
+        amend_sheet_list(sheet_overview_list)
         sheets_overview_list.append(sheet_overview_list)
 
         self.__gen_excel_data(
@@ -551,12 +534,12 @@ class Dump(Data):
             overview = Sheet(
                 workbook=workbook,
                 name="概观",
-                data=self.__merge_sheets_list(sheets_overview_list),
+                data=merge_sheets_list(sheets_overview_list),
             )
             simple = Sheet(
                 workbook=workbook,
                 name="总览",
-                data=self.__merge_sheets_list(sheets_simple_list),
+                data=merge_sheets_list(sheets_simple_list),
             )
             counter = Sheet(workbook=workbook, name="台词", data=sheet_counter_list)
 
