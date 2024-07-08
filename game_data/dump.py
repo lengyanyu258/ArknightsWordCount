@@ -315,6 +315,13 @@ class Dump(Data):
                 amend_sheet_list(level_list)
                 levels_list.append(level_list)
             story_list = merge_sheets_list(levels_list, False)
+            sheet_detail_list.append([])  # 空一行
+
+            if len(stories[story_name]["items"]) == 1:
+                # 如果只包含一个关卡，则不生成总摘要信息
+                sheet_detail_list.extend([[story_name]] + story_list)
+                continue
+
             story_digest = [[story_name]]
             self.__gen_info_data(
                 1,
@@ -323,7 +330,6 @@ class Dump(Data):
                 max_number=len(story_list) - 1,
             )
             amend_sheet_list(story_digest)
-            sheet_detail_list.append([])  # 空一行
             sheet_detail_list.extend(
                 merge_sheets_list([story_digest, story_list], False)
             )
