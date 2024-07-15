@@ -323,7 +323,7 @@ class Range:
 
         # Assume per character unit width is 5 pixels (for longer width of this font used in Cell).
         # (Because the number will be showed in Scientific Notation due to the short width of Cell.)
-        return pixels_width / 5 + 0.5 * 2
+        return pixels_width / 5 + 1 * 2
 
     def __get_row_height(
         self,

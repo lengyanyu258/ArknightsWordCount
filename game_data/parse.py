@@ -3,10 +3,10 @@ import re
 import warnings
 from argparse import Namespace
 
-from .data import Data
+from .base import Base
 
 
-class Parse(Data):
+class Parse(Base):
     __ASIDE_NAME = "『旁白』"
     __command_pattern = re.compile(r"\w+")
     __text_pattern = re.compile(r"(?:\[(.+)\])?(.+)?", re.MULTILINE)

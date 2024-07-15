@@ -5,12 +5,12 @@ from itertools import product
 from pathlib import Path
 from typing import Any
 
-from .data import Data
+from .base import Base, Info
 from .excel import Sheet
 from .utils import amend_sheet_list, merge_sheets_list
 
 
-class Dump(Data):
+class Dump(Base):
     __WORDS = "字词数"
     __PUNCTUATION = "标点数"
     __ELLIPSIS = "省略号"
@@ -334,9 +334,8 @@ class Dump(Data):
                 merge_sheets_list([story_digest, story_list], False)
             )
 
+    @Info("style formatting...")
     def __gen_sheet_style(self, overview: Sheet, simple: Sheet, counter: Sheet):
-        self._info("style formatting...")
-
         from .excel import CellFormatProperties as Props
         from .utils import find_index, find_indices
 
@@ -424,101 +423,31 @@ class Dump(Data):
         counter.autofit()
 
         idx_row = 1
-        idx_column = find_index(counter.cells[idx_row], "Index")
+        idx_col = find_index(counter.cells[idx_row], "Index")
         # Name column: Horizontal Alignment Center
-        counter[:, idx_column + 1].set_format(Props.center)
+        counter[:, idx_col + 1].set_format(Props.center)
         # Index region: Border Line Style
-        counter[idx_row, idx_column].expand().set_format(Props.border)
+        counter[idx_row, idx_col].expand().set_format(Props.border)
         # Title column: Font Bold
-        bold_column = find_index(counter.cells[idx_row], self.__WORDS, idx_column + 1)
+        bold_column = find_index(counter.cells[idx_row], self.__WORDS, idx_col + 1)
         counter[:, bold_column].set_format(Props.font_bold)
         # Index range: Title Style
-        head_range = counter[idx_row, idx_column].expand("right")
+        head_range = counter[idx_row, idx_col].expand("right")
         head_range.set_format(Props.title)
         counter[idx_row - 1, head_range.slice.col].merge(Props.title)
 
-        self._info("done.", end=True)
-
-    def __gen_excel_data(
+    @Info("Writing to excel...")
+    def __write_excel_data(
         self,
+        info: dict,
         sheets_overview_list: list,
         sheets_simple_list: list,
-        sheets_detail_dict: dict,
         sheet_counter_list: list,
+        sheets_detail_dict: dict,
     ):
-        self._info("Generating data...")
-
-        storys_overview_dict = {"items": {}}
-
-        for entry_type, item_dict in self.data["count"]["items"].items():
-            # 『概观』表单
-            sheet_overview_list = [[entry_type]]
-            self.__gen_overview_data(sheet_overview_list, item_dict, "words")
-            amend_sheet_list(sheet_overview_list)
-            sheets_overview_list.append(sheet_overview_list)
-
-            # 『总览』表单
-            sheet_simple_list = [[entry_type]]
-            self.__gen_simple_data(sheet_simple_list, item_dict)
-            amend_sheet_list(sheet_simple_list)
-            sheets_simple_list.append(sheet_simple_list)
-
-            sheet_detail_list = [[entry_type]]
-            self.__gen_detail_data(sheet_detail_list, item_dict)
-            amend_sheet_list(sheet_detail_list)
-            sheets_detail_dict[entry_type] = sheet_detail_list
-
-            for story_key, story_dict in item_dict["items"].items():
-                if story_key in storys_overview_dict["items"]:
-                    info_dict = storys_overview_dict["items"][story_key]["info"]
-                    for key in ["words", "punctuation", "commands"]:
-                        info_dict[key] += story_dict["info"][key]
-                else:
-                    storys_overview_dict["items"][story_key] = story_dict
-
-        sheet_overview_list = [["Merged"]]
-        self.__gen_overview_data(sheet_overview_list, storys_overview_dict, "commands")
-        amend_sheet_list(sheet_overview_list)
-        sheets_overview_list.append(sheet_overview_list)
-
-        sheet_counter_list.append(["台词量统计"])
-        self.__gen_sorted_counter_data(
-            0, self.data["count"]["info"], sheet_counter_list, None, False
-        )
-        amend_sheet_list(sheet_counter_list)
-
-        self._info("Done.", end=True)
-
-    def dump_excel(self, info: dict) -> Path:
         from xlsxwriter import Workbook
 
-        sheets_overview_list = []
-        sheets_simple_list = []
-        sheets_detail_dict = {}
-        sheet_counter_list = []
-
-        # 初始化台词量统计数据
-        self.__merge_counter_dict(self.data["count"]["info"]["counter"])
-
-        sheet_overview_list = []
-        # 添加文档首部信息
-        self.__add_info_data(info, sheet_overview_list)
-        # 添加总量统计信息
-        sheet_overview_list.append(["ALL"])
-        self.__gen_info_data(0, self.data["count"]["info"], sheet_overview_list, 13)
-        amend_sheet_list(sheet_overview_list)
-        sheets_overview_list.append(sheet_overview_list)
-
-        self.__gen_excel_data(
-            sheets_overview_list,
-            sheets_simple_list,
-            sheets_detail_dict,
-            sheet_counter_list,
-        )
-
         with Workbook(self.__xlsx_file) as workbook:
-            self._info("Writing to excel...")
-
             ## 设置 Workbook 文档属性
             # workbook.read_only_recommended()
             workbook.set_properties(
@@ -561,6 +490,86 @@ class Dump(Data):
 
             overview.worksheet.activate()
 
-            self._info("Done.", end=True)
+    @Info("Generating data...")
+    def __gen_excel_data(
+        self,
+        sheets_overview_list: list,
+        sheets_simple_list: list,
+        sheets_detail_dict: dict,
+        sheet_counter_list: list,
+    ):
+        storys_overview_dict = {"items": {}}
+
+        for entry_type, item_dict in self.data["count"]["items"].items():
+            # 『概观』表单
+            sheet_overview_list = [[entry_type]]
+            self.__gen_overview_data(sheet_overview_list, item_dict, "words")
+            amend_sheet_list(sheet_overview_list)
+            sheets_overview_list.append(sheet_overview_list)
+
+            # 『总览』表单
+            sheet_simple_list = [[entry_type]]
+            self.__gen_simple_data(sheet_simple_list, item_dict)
+            amend_sheet_list(sheet_simple_list)
+            sheets_simple_list.append(sheet_simple_list)
+
+            sheet_detail_list = [[entry_type]]
+            self.__gen_detail_data(sheet_detail_list, item_dict)
+            amend_sheet_list(sheet_detail_list)
+            sheets_detail_dict[entry_type] = sheet_detail_list
+
+            for story_key, story_dict in item_dict["items"].items():
+                if story_key in storys_overview_dict["items"]:
+                    info_dict = storys_overview_dict["items"][story_key]["info"]
+                    for key in ["words", "punctuation", "commands"]:
+                        info_dict[key] += story_dict["info"][key]
+                else:
+                    storys_overview_dict["items"][story_key] = story_dict
+
+        sheet_overview_list = [["Merged"]]
+        self.__gen_overview_data(sheet_overview_list, storys_overview_dict, "commands")
+        amend_sheet_list(sheet_overview_list)
+        sheets_overview_list.append(sheet_overview_list)
+
+        sheet_counter_list.append(["台词量统计"])
+        self.__gen_sorted_counter_data(
+            0, self.data["count"]["info"], sheet_counter_list, None, False
+        )
+        amend_sheet_list(sheet_counter_list)
+
+    def dump_excel(self, info: dict) -> Path:
+        sheets_overview_list = []
+        sheets_simple_list = []
+        sheet_counter_list = []
+        sheets_detail_dict = {}
+
+        # 初始化台词量统计数据
+        self.__merge_counter_dict(self.data["count"]["info"]["counter"])
+
+        sheet_overview_list = []
+        # 添加文档首部信息
+        self.__add_info_data(info, sheet_overview_list)
+        # 添加总量统计信息
+        sheet_overview_list.append(["ALL"])
+        self.__gen_info_data(0, self.data["count"]["info"], sheet_overview_list, 13)
+        amend_sheet_list(sheet_overview_list)
+        sheets_overview_list.append(sheet_overview_list)
+
+        # 生成 Excel 表单数据
+        self.__gen_excel_data(
+            sheets_overview_list,
+            sheets_simple_list,
+            sheets_detail_dict,
+            sheet_counter_list,
+        )
+
+        # 写入 Excel 表单数据
+        self.__write_excel_data(
+            info,
+            sheets_overview_list,
+            sheets_simple_list,
+            sheet_counter_list,
+            sheets_detail_dict,
+        )
 
         return self.__xlsx_file

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
+from .base import Info
 from .count import Count
 from .dump import Dump
 
@@ -69,9 +70,8 @@ class GameData(Count, Dump):
 
         self.__load_data()
 
+    @Info("loading...")
     def __load_data(self):
-        self._info("loading...")
-
         if self.__pickle_file.exists():
             self.data = pickle.loads(self.__pickle_file.read_bytes())
         elif not self.__pickle_file.parent.exists():
@@ -84,11 +84,8 @@ class GameData(Count, Dump):
         if self.data["excel"]["gamedata_const"]["dataVersion"] != data_version:
             self.update()
 
-        self._info("done.", end=True)
-
+    @Info("updating story...")
     def __update_story(self):
-        self._info("updating story...")
-
         info_files = self.__story_dirs["info"].rglob("*.txt")
         activity_files = self.__story_dirs["activities"].rglob("*.txt")
         obt_files = self.__story_dirs["obt"].rglob("*.txt")
@@ -111,14 +108,14 @@ class GameData(Count, Dump):
                 "info": info.read_text(encoding="utf-8"),
                 "txt": txt,
             }
-        else:
-            for file in files:
-                file_relative_path = file.relative_to(self.__story_dir)
-                story_key = file_relative_path.with_suffix("").as_posix()
-                self.data["story"][story_key] = {
-                    "info": "",
-                    "txt": file.read_text(encoding="utf-8"),
-                }
+
+        for file in files:
+            file_relative_path = file.relative_to(self.__story_dir)
+            story_key = file_relative_path.with_suffix("").as_posix()
+            self.data["story"][story_key] = {
+                "info": "",
+                "txt": file.read_text(encoding="utf-8"),
+            }
 
         if len(self.__unknown["files"]):
             tmp_text = ""
@@ -126,14 +123,11 @@ class GameData(Count, Dump):
                 tmp_text += f'"{i}",\n'
             self.__unknown_files_file.write_text(tmp_text)
 
-        self._info("done.", end=True)
-
+    @Info("updating...")
     def update(self):
         if self.__updated:
             return
         self.__updated = True
-
-        self._info("updating...")
 
         for i in self.__excel_dirs:
             self.data["excel"][i] = json.loads(self.__excel_dirs[i].read_bytes())
@@ -141,25 +135,48 @@ class GameData(Count, Dump):
         self.__update_story()
         self.count()
 
-        self._info("done.", end=True)
-
+    @Info("counting words...")
     def count(self):
         if self.__counted:
             return
         self.__counted = True
 
-        self._info("counting words...")
-
         self.count_words()
         self.__pickle_file.write_bytes(pickle.dumps(self.data))
 
-        self._info("done.", end=True)
-
+    @Info("start dumping...")
     def dump(self, info: dict) -> Path:
-        self._info("start dumping...")
+        return self.dump_excel(info)
 
-        dump_file = self.dump_excel(info)
+    @Info("publish file...")
+    def publish(self, xlsx_file_path: str, dumped_file: Path):
+        import re
 
-        self._info("done.", end=True)
+        # dump_file.with_suffix(".json").write_text(
+        #     json.dumps(game_data.data["count"], ensure_ascii=False, indent=4)
+        # )
+        published_file = Path(xlsx_file_path)
+        published_dir = published_file.parent
+        website_dir = published_dir / "website"
 
-        return dump_file
+        # remove old xlsx files
+        for file_path in published_dir.rglob(f"*{published_file.suffix}"):
+            file_path.unlink()
+
+        # add new files
+        published_file.unlink(missing_ok=True)
+        published_file.hardlink_to(target=dumped_file)
+        alternative_file = website_dir / dumped_file.name
+        alternative_file.unlink(missing_ok=True)
+        alternative_file.hardlink_to(target=dumped_file)
+
+        # modify the index.html file
+        index_html_file = website_dir / "index.html"
+        index_html_file.write_text(
+            re.sub(
+                rf"{published_file.stem}_?\d*\{published_file.suffix}",
+                alternative_file.name,
+                index_html_file.read_text(encoding="utf-8"),
+            ),
+            encoding="utf-8",
+        )

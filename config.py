@@ -10,7 +10,10 @@ filename: str = pyproject["tool"]["poetry"]["name"]
 
 
 class Config:
-    DATA_DIR = r"./Github/ArknightsGameData/zh_CN/gamedata"
+    DATA_DIRS = (
+        r"./Github/ArknightsGameData/zh_CN/gamedata",
+        r"./Github/ArknightsGameResource/gamedata",
+    )
 
     info: dict[str, Any] = pyproject["tool"]["poetry"]
     xlsx_file_path = f"./docs/{filename}.xlsx"

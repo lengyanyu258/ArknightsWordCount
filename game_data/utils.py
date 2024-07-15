@@ -14,7 +14,7 @@ class Axis:
             right = left
 
         if left > right:
-            raise ValueError(f"Can not left > right in axis: {left} > {right}!")
+            raise ValueError(f"Invalid left > right in axis: {left} > {right}!")
 
         object.__setattr__(self, "left", left)
         object.__setattr__(self, "right", right)

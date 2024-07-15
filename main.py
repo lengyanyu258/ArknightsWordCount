@@ -1,10 +1,8 @@
-from config import Config, filename
+from config import Config
 
 
 def main():
     import datetime
-    import re
-    from pathlib import Path
 
     from game_data import GameData
 
@@ -35,31 +33,10 @@ def main():
         },
         "authors": Config.info["authors"],
     }
-    dump_file = game_data.dump(info)
+    dumped_file = game_data.dump(info)
 
     if args.publish:
-        # remove old xlsx files
-        for file_path in Path(Config.xlsx_file_path).parent.glob("*.xlsx"):
-            file_path.unlink()
-
-        # add new files
-        published_file = Path(Config.xlsx_file_path)
-        published_file.unlink(missing_ok=True)
-        published_file.hardlink_to(target=dump_file)
-        alternative_file = published_file.with_name(dump_file.name)
-        alternative_file.unlink(missing_ok=True)
-        alternative_file.hardlink_to(target=dump_file)
-
-        # modify the index.html file
-        index_html_file = published_file.with_name("index.html")
-        index_html_file.write_text(
-            re.sub(
-                rf"{filename}_?\d*\.xlsx",
-                alternative_file.name,
-                index_html_file.read_text(encoding="utf-8"),
-            ),
-            encoding="utf-8",
-        )
+        game_data.publish(Config.xlsx_file_path, dumped_file)
 
 
 if __name__ == "__main__":
@@ -128,11 +105,11 @@ if __name__ == "__main__":
     )
     parser.description = Config.info["description"]
     parser.epilog = "e.g.: python %(prog)s -p {data_dir}".format(
-        data_dir=Config.DATA_DIR
+        data_dir=Config.DATA_DIRS[0]
     )
     args = parser.parse_args()
 
-    data_dir: str = args.data_dir or Config.DATA_DIR
+    data_dir: str = args.data_dir or Config.DATA_DIRS[0]
 
     # strip ambiguous chars.
     data_dir_path = data_dir.encode().translate(None, delete='*?"<>|'.encode()).decode()
