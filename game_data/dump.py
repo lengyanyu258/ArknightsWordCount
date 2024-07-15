@@ -171,12 +171,12 @@ class Dump(Base):
                 ]
             )
 
-    def __add_info_data(self, info: dict, sheet_list: list):
+    def __add_info_data(self, sheet_list: list):
         def append_list(a, b):
             sheet_list.append([f"{a}：", b])
 
-        sheet_list.append([info["title"]])
-        for k, v in info["data"].items():
+        sheet_list.append([self.data["info"]["title"]])
+        for k, v in self.data["info"]["data"].items():
             if isinstance(v, list):
                 append_list(k, v[0])
                 for i in v[1:]:
@@ -439,7 +439,6 @@ class Dump(Base):
     @Info("Writing to excel...")
     def __write_excel_data(
         self,
-        info: dict,
         sheets_overview_list: list,
         sheets_simple_list: list,
         sheet_counter_list: list,
@@ -452,14 +451,17 @@ class Dump(Base):
             # workbook.read_only_recommended()
             workbook.set_properties(
                 {
-                    "title": info["title"],
+                    "title": self.data["info"]["title"],
                     "author": "; ".join(
-                        [re.sub("( ?<.+>)", "", author) for author in info["authors"]]
+                        [
+                            re.sub("( ?<.+>)", "", author)
+                            for author in self.data["info"]["authors"]
+                        ]
                     ),
                     "comments": "Created with Python and XlsxWriter",
                 }
             )
-            for k, v in info["data"].items():
+            for k, v in self.data["info"]["data"].items():
                 if isinstance(v, list):
                     workbook.set_custom_property(k, "; ".join(v))
                 else:
@@ -537,7 +539,7 @@ class Dump(Base):
         )
         amend_sheet_list(sheet_counter_list)
 
-    def dump_excel(self, info: dict) -> Path:
+    def dump_excel(self) -> Path:
         sheets_overview_list = []
         sheets_simple_list = []
         sheet_counter_list = []
@@ -548,7 +550,7 @@ class Dump(Base):
 
         sheet_overview_list = []
         # 添加文档首部信息
-        self.__add_info_data(info, sheet_overview_list)
+        self.__add_info_data(sheet_overview_list)
         # 添加总量统计信息
         sheet_overview_list.append(["ALL"])
         self.__gen_info_data(0, self.data["count"]["info"], sheet_overview_list, 13)
@@ -565,7 +567,6 @@ class Dump(Base):
 
         # 写入 Excel 表单数据
         self.__write_excel_data(
-            info,
             sheets_overview_list,
             sheets_simple_list,
             sheet_counter_list,

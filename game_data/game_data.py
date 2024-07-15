@@ -29,6 +29,7 @@ class GameData(Count, Dump):
             raise NotADirectoryError(f"{data_dir.absolute()} is not a directory!")
 
         self.__pickle_file = Path(config.pickle_file_path)
+        self.__json_file = Path(config.json_file_path)
 
         Count.__init__(
             self=self,
@@ -51,9 +52,9 @@ class GameData(Count, Dump):
         excel_dir = data_dir / "excel"
         self.__story_dir = data_dir / "story"
 
-        self._data_version_path = excel_dir / "data_version.txt"
-        if not self._data_version_path.exists():
-            raise FileNotFoundError(f"{self._data_version_path.absolute()} not found!")
+        self.__data_version_path = excel_dir / "data_version.txt"
+        if not self.__data_version_path.exists():
+            raise FileNotFoundError(f"{self.__data_version_path.absolute()} not found!")
 
         self.__excel_dirs: dict[str, Path] = {
             "activity_table": excel_dir / "activity_table.json",
@@ -70,6 +71,14 @@ class GameData(Count, Dump):
 
         self.__load_data()
 
+    @property
+    def version(self) -> str:
+        return self.__version
+
+    @property
+    def date(self) -> str:
+        return self.__date
+
     @Info("loading...")
     def __load_data(self):
         if self.__pickle_file.exists():
@@ -77,12 +86,17 @@ class GameData(Count, Dump):
         elif not self.__pickle_file.parent.exists():
             self.__pickle_file.parent.mkdir(parents=True)
 
-        data_version: str = (
-            self._data_version_path.read_text(encoding="utf-8").split(":")[-1].strip()
-        )
+        if self.__json_file.exists():
+            self.data.update(json.loads(self.__json_file.read_text(encoding="gb18030")))
 
-        if self.data["excel"]["gamedata_const"]["dataVersion"] != data_version:
-            self.update()
+        data_version_content = self.__data_version_path.read_text(encoding="utf-8")
+        self.__version = data_version_content.split(":")[-1].strip()
+        self.__date = data_version_content.split()[-2].strip()
+
+        if self.version != self.data["excel"]["gamedata_const"]["dataVersion"]:
+            info_data = self.data.get("info", {}).get("data", {})
+            if self.version != info_data.get("数据版本"):
+                self.update()
 
     @Info("updating story...")
     def __update_story(self):
@@ -146,15 +160,13 @@ class GameData(Count, Dump):
 
     @Info("start dumping...")
     def dump(self, info: dict) -> Path:
-        return self.dump_excel(info)
+        self.data["info"] = info
+        return self.dump_excel()
 
     @Info("publish file...")
     def publish(self, xlsx_file_path: str, dumped_file: Path):
         import re
 
-        # dump_file.with_suffix(".json").write_text(
-        #     json.dumps(game_data.data["count"], ensure_ascii=False, indent=4)
-        # )
         published_file = Path(xlsx_file_path)
         published_dir = published_file.parent
         website_dir = published_dir / "website"
@@ -179,4 +191,13 @@ class GameData(Count, Dump):
                 index_html_file.read_text(encoding="utf-8"),
             ),
             encoding="utf-8",
+        )
+
+        self.__json_file.write_text(
+            json.dumps(
+                {"info": self.data["info"]},
+                ensure_ascii=False,
+                indent=4,
+            ),
+            encoding="gb18030",
         )

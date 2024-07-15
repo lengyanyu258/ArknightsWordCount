@@ -18,7 +18,10 @@ class Config:
     info: dict[str, Any] = pyproject["tool"]["poetry"]
     xlsx_file_path = f"./docs/{filename}.xlsx"
 
-    game_data_config = Namespace(pickle_file_path=f"./tmp/{filename}.pkl")
+    game_data_config = Namespace(
+        pickle_file_path=f"./tmp/{filename}.pkl",
+        json_file_path=f"./docs/{filename}.json",
+    )
 
     dump_config = Namespace(
         FONT_NAME="Sarasa Mono Slab SC",

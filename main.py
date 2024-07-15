@@ -21,13 +21,12 @@ def main():
     if args.no_dump:
         return
 
-    data_date = game_data._data_version_path.read_text(encoding="utf-8").split()[-2]
     info = {
         "title": Config.info["description"],
         "data": {
             "程序版本": Config.info["version"],
             "数据版本": game_data.data["excel"]["gamedata_const"]["dataVersion"],
-            "数据日期": data_date.strip(),
+            "数据日期": game_data.date,
             "文档日期": f"{datetime.date.today():%Y/%m/%d}",
             "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki",
         },
