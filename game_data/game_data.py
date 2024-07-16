@@ -1,6 +1,7 @@
 import json
 import pickle
 from argparse import Namespace
+from datetime import date
 from pathlib import Path
 
 from tqdm import tqdm
@@ -72,15 +73,22 @@ class GameData(Count, Dump):
         self.__load_data()
 
     @property
-    def version(self) -> str:
+    def version(self) -> tuple[int, ...]:
         return self.__version
 
     @property
-    def date(self) -> str:
+    def date(self) -> date:
         return self.__date
+
+    @property
+    def updated(self) -> bool:
+        return self.__updated
 
     @Info("loading...")
     def __load_data(self):
+        def parse_version(ver: str):
+            return tuple(map(lambda x: int(x), ver.split(".")))
+
         if self.__pickle_file.exists():
             self.data = pickle.loads(self.__pickle_file.read_bytes())
         elif not self.__pickle_file.parent.exists():
@@ -89,13 +97,14 @@ class GameData(Count, Dump):
         if self.__json_file.exists():
             self.data.update(json.loads(self.__json_file.read_text(encoding="gb18030")))
 
-        data_version_content = self.__data_version_path.read_text(encoding="utf-8")
-        self.__version = data_version_content.split(":")[-1].strip()
-        self.__date = data_version_content.split()[-2].strip()
+        content = self.__data_version_path.read_text(encoding="utf-8")
+        self.__version = parse_version(content.split(":")[-1].strip())
+        self.__date = date.fromisoformat(content.split()[-2].strip().replace("/", "-"))
 
-        if self.version != self.data["excel"]["gamedata_const"]["dataVersion"]:
+        old_version = parse_version(self.data["excel"]["gamedata_const"]["dataVersion"])
+        if self.version > old_version:
             info_data = self.data.get("info", {}).get("data", {})
-            if self.version != info_data.get("数据版本"):
+            if self.version > parse_version(info_data.get("数据版本", "0.0.0")):
                 self.update()
 
     @Info("updating story...")
