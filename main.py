@@ -44,7 +44,7 @@ def main():
             "程序版本": Config.info["version"],
             "数据版本": ".".join(map(lambda x: str(x), game_data.version)),
             "数据日期": game_data.date.isoformat(),
-            "文档日期": f"{datetime.date.today():%Y/%m/%d}",
+            "文档日期": f"{datetime.date.today():%Y-%m-%d}",
             "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki",
         },
         "authors": Config.info["authors"],
