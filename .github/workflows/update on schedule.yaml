@@ -77,11 +77,12 @@ jobs:
           poetry run python main.py --all --publish
 
       - name: Auto commit to repo.
+        id: auto_commit
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           # Optional. Commit message for the created commit.
           # Defaults to "Apply automatic changes"
-          commit_message: "docs(pages): auto update data by bot."
+          commit_message: "docs(pages): AUTO update data[BOT]."
 
           # Optional. Options used by `git-commit`.
           # See https://git-scm.com/docs/git-commit#_options
@@ -92,15 +93,11 @@ jobs:
           # See the `pathspec`-documentation for git
           # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
           # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
-          file_pattern: "docs/**"
+          file_pattern: "docs/"
 
           # Optional. Option used by `git-status` to determine if the repository is
           # dirty. See https://git-scm.com/docs/git-status#_options
           status_options: "--untracked-files=no"
-
-          # Optional. Options used by `git-add`.
-          # See https://git-scm.com/docs/git-add#_options
-          add_options: "-u"
 
           # Optional. Disable dirty check and always try to create a commit and push
           skip_dirty_check: true
@@ -115,4 +112,5 @@ jobs:
           # Details: https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
           disable_globbing: true
 
-      - run: echo "Update Done!"
+      - if: steps.auto_commit.outputs.changes_detected == 'true'
+        run: echo "Update Done!"
