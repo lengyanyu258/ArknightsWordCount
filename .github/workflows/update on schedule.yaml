@@ -69,6 +69,7 @@ jobs:
           python-version: "3.11"
           cache: "poetry"
       - run: |
+          tree -L 4 .
           poetry install
           poetry run python main.py --all --publish
 

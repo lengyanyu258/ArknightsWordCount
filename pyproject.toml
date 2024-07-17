@@ -1,4 +1,5 @@
 [tool.poetry]
+package-mode = false
 name = "arknights-word-count"
 version = "3.6.1"
 description = "《明日方舟》字词统计"
