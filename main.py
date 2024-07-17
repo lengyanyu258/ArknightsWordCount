@@ -2,7 +2,7 @@ from config import Config
 
 
 def main():
-    import datetime
+    from datetime import datetime, timedelta, timezone
 
     from game_data import GameData
 
@@ -38,13 +38,14 @@ def main():
     if args.no_dump:
         return
 
+    datetime_now = datetime.now(timezone(timedelta(hours=8)))
     info = {
         "title": Config.info["description"],
         "data": {
             "程序版本": Config.info["version"],
             "数据版本": ".".join(map(lambda x: str(x), game_data.version)),
             "数据日期": game_data.date.isoformat(),
-            "文档日期": datetime.date.today().isoformat(),
+            "文档日期": datetime_now.date().isoformat(),
             "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki",
         },
         "authors": Config.info["authors"],
@@ -52,7 +53,7 @@ def main():
     if args.auto_update:
         info["data"][
             "其他说明"
-        ] = f"{datetime.datetime.now().time().isoformat(timespec='seconds')} 自动更新"
+        ] = f"{datetime_now.time().isoformat(timespec='seconds')} 自动更新"
     dumped_file = game_data.dump(info)
 
     if args.publish:
