@@ -72,7 +72,7 @@ jobs:
           # cache: "poetry"
       - name: Install Poetry Dependences.
         run: poetry install
-      - run: poetry run python main.py --all --publish
+      - run: poetry run python main.py --all --auto_update --publish
 
       - name: Auto commit to repo.
         id: auto_commit

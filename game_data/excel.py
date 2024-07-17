@@ -34,6 +34,7 @@ class CellFormatProperties:
     border = {"border": 1}
     center = {"align": "center", "valign": "vcenter"}
     font_bold = {"bold": True}
+    left = {"align": "left", "valign": "vcenter"}
     right = {"align": "right", "valign": "vcenter"}
     title = {**center, "border": 2}
 

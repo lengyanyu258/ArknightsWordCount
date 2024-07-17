@@ -387,8 +387,10 @@ class Dump(Base):
 
         # Cells 'Title' Range:
         title_range = overview[0, 0].expand()
-        title_range[-1, -1].set_format({"hyperlink": True})
+        title_range[:, -1].set_format(Props.left)
         for row in range(title_range.last_cell.row):
+            if "http" in title_range[row + 1, -1].value:
+                title_range[row + 1, -1].set_format({"hyperlink": True})
             overview[
                 row + 1,
                 title_range.last_cell.col : all_region.last_cell.col + 1,

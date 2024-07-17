@@ -26,7 +26,7 @@ def main():
         if game_data.updated:
             break
     else:
-        if args.all:
+        if args.auto_update:
             print("No need to update!")
             return
         game_data = game_data_objs[-1]
@@ -44,11 +44,15 @@ def main():
             "程序版本": Config.info["version"],
             "数据版本": ".".join(map(lambda x: str(x), game_data.version)),
             "数据日期": game_data.date.isoformat(),
-            "文档日期": f"{datetime.date.today():%Y-%m-%d}",
+            "文档日期": datetime.date.today().isoformat(),
             "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki",
         },
         "authors": Config.info["authors"],
     }
+    if args.auto_update:
+        info["data"][
+            "其他说明"
+        ] = f"{datetime.datetime.now().time().isoformat(timespec='seconds')} 自动更新"
     dumped_file = game_data.dump(info)
 
     if args.publish:
@@ -108,6 +112,11 @@ if __name__ == "__main__":
         "--all",
         action="store_true",
         help="Try to update all DATA_DIRS & Publish it.",
+    )
+    switch.add_argument(
+        "--auto_update",
+        action="store_true",
+        help="Auto Update by GitHub Action flag.",
     )
     switch.add_argument(
         "-ci",
