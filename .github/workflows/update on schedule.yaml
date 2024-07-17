@@ -24,7 +24,7 @@ jobs:
           repository: "Kengxxiao/ArknightsGameData"
           path: "Github/ArknightsGameData"
           filter: "blob:none"
-          sparse-checkout: "/zh_CN/gamedata/"
+          sparse-checkout: "zh_CN/gamedata/"
 
       - name: Checkout ArknightsGameResource Repo.
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
           repository: "yuanyan3060/ArknightsGameResource"
           path: "Github/ArknightsGameResource"
           filter: "blob:none"
-          sparse-checkout: "/gamedata/"
+          sparse-checkout: "gamedata/"
 
       - name: Download Sarasa Gothic Mono Slab SC TTF
         id: download_7z
