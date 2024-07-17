@@ -70,11 +70,9 @@ jobs:
         with:
           python-version: "3.11"
           # cache: "poetry"
-      - name: Install Dependences.
+      - name: Install Poetry Dependences.
         run: poetry install
-      - run: |
-          tree -L 4 .
-          poetry run python main.py --all --publish
+      - run: poetry run python main.py --all --publish
 
       - name: Auto commit to repo.
         id: auto_commit
