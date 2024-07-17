@@ -1,0 +1,116 @@
+name: Update Game Data
+
+on:
+  schedule:
+    - cron: "30 10,16 * * *"
+  workflow_dispatch:
+
+# Global permissions configuration starts here
+permissions:
+  # 'write' access to repository contents
+  contents: write
+
+concurrency:
+  group: "update"
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ArknightsGameData Repo.
+        uses: actions/checkout@v4
+        with:
+          repository: "Kengxxiao/ArknightsGameData"
+          path: "Github/ArknightsGameData"
+          filter: "blob:none"
+          sparse-checkout: "/zh_CN/gamedata/"
+
+      - name: Checkout ArknightsGameResource Repo.
+        uses: actions/checkout@v4
+        with:
+          repository: "yuanyan3060/ArknightsGameResource"
+          path: "Github/ArknightsGameResource"
+          filter: "blob:none"
+          sparse-checkout: "/gamedata/"
+
+      - name: Download Sarasa Gothic Mono Slab SC TTF
+        id: download_7z
+        uses: robinraju/release-downloader@v1.11
+        with:
+          # The source repository path.
+          # Expected format {owner}/{repo}
+          # Default: ${{ github.repository }}
+          repository: "be5invis/Sarasa-Gothic"
+
+          # A flag to set the download target as latest release
+          # The default value is 'false'
+          latest: true
+
+          # The name of the file to download.
+          # Use this field only to specify filenames other than tarball or zipball, if any.
+          # Supports wildcard pattern (eg: '*', '*.deb', '*.zip' etc..)
+          fileName: "SarasaMonoSlabSC-TTF-Unhinted-*.7z"
+
+          # Relative path under $GITHUB_WORKSPACE to place the downloaded file(s)
+          # It will create the target directory automatically if not present
+          # eg: out-file-path: "my-downloads" => It will create directory $GITHUB_WORKSPACE/my-downloads
+          out-file-path: "tmp"
+
+          # A flag to set if the downloaded assets are archives and should be extracted
+          # Checks all downloaded files if they end with zip, tar or tar.gz and extracts them, if true.
+          # Prints a warning if enabled but file is not an archive - but does not fail.
+          extract: true
+
+      - name: Extract downloaded 7z file
+        run: |
+          sudo apt-get update
+          sudo apt-get install p7zip-full
+          7z x -t7z -otmp ${{ fromJson(steps.download_7z.outputs.downloaded_files)[0] }}
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python main.py --all --publish
+
+      - name: Auto commit to repo.
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # Optional. Commit message for the created commit.
+          # Defaults to "Apply automatic changes"
+          commit_message: "docs(pages): auto update data by bot."
+
+          # Optional. Options used by `git-commit`.
+          # See https://git-scm.com/docs/git-commit#_options
+          commit_options: "--no-verify --signoff"
+
+          # Optional glob pattern of files which should be added to the commit
+          # Defaults to all (.)
+          # See the `pathspec`-documentation for git
+          # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
+          # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
+          file_pattern: "docs/**"
+
+          # Optional. Option used by `git-status` to determine if the repository is
+          # dirty. See https://git-scm.com/docs/git-status#_options
+          status_options: "--untracked-files=no"
+
+          # Optional. Options used by `git-add`.
+          # See https://git-scm.com/docs/git-add#_options
+          add_options: "-u"
+
+          # Optional. Disable dirty check and always try to create a commit and push
+          skip_dirty_check: true
+
+          # Optional. Skip internal call to `git fetch`
+          skip_fetch: true
+
+          # Optional. Skip internal call to `git checkout`
+          skip_checkout: true
+
+          # Optional. Prevents the shell from expanding filenames.
+          # Details: https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
+          disable_globbing: true
+
+      - run: echo "Update Done!"
