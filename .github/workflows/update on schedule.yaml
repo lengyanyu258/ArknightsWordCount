@@ -57,22 +57,19 @@ jobs:
           # eg: out-file-path: "my-downloads" => It will create directory $GITHUB_WORKSPACE/my-downloads
           out-file-path: "tmp"
 
-          # A flag to set if the downloaded assets are archives and should be extracted
-          # Checks all downloaded files if they end with zip, tar or tar.gz and extracts them, if true.
-          # Prints a warning if enabled but file is not an archive - but does not fail.
-          extract: true
-
       - name: Extract downloaded 7z file
-        run: |
-          sudo apt-get update
-          sudo apt-get install p7zip-full
-          7z x -t7z -otmp ${{ fromJson(steps.download_7z.outputs.downloaded_files)[0] }}
+        # p7zip-full is already the newest version.
+        run: 7z x -t7z -otmp ${{ fromJson(steps.download_7z.outputs.downloaded_files)[0] }}
 
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python main.py --all --publish
+          cache: "poetry"
+      - run: |
+          pipx install poetry
+          poetry install
+          poetry run python main.py --all --publish
 
       - name: Auto commit to repo.
         uses: stefanzweifel/git-auto-commit-action@v5
