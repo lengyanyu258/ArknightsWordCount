@@ -1,5 +1,5 @@
-from .config import Config
-from .game_data import GameData
+from config import Config
+from game_data import GameData
 
 
 def manipulate(game_data: GameData):
