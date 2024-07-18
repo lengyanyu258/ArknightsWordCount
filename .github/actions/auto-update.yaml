@@ -1,0 +1,75 @@
+name: Auto Update & Commit
+description: "下载字体文件并执行脚本更新之后自动提交更改"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download Sarasa Gothic Mono Slab SC TTF Release Asset
+      id: download_7z
+      uses: robinraju/release-downloader@v1.11
+      with:
+        # The source repository path.
+        # Expected format {owner}/{repo}
+        # Default: ${{ github.repository }}
+        repository: "be5invis/Sarasa-Gothic"
+
+        # A flag to set the download target as latest release
+        # The default value is 'false'
+        latest: true
+
+        # The name of the file to download.
+        # Use this field only to specify filenames other than tarball or zipball, if any.
+        # Supports wildcard pattern (eg: '*', '*.deb', '*.zip' etc..)
+        fileName: "SarasaMonoSlabSC-TTF-Unhinted-*.7z"
+
+        # Relative path under $GITHUB_WORKSPACE to place the downloaded file(s)
+        # It will create the target directory automatically if not present
+        # eg: out-file-path: "my-downloads" => It will create directory $GITHUB_WORKSPACE/my-downloads
+        out-file-path: "tmp"
+
+    - name: Extract downloaded 7z file Asset
+      shell: bash
+      # p7zip-full is already the newest version (ubuntu-latest).
+      run: 7z x -t7z -otmp ${{ fromJson(steps.download_7z.outputs.downloaded_files)[0] }}
+
+    - run: poetry run python main.py --all --auto_update --publish
+
+    - name: Auto commit to repo.
+      id: auto_commit
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        # Optional. Commit message for the created commit.
+        # Defaults to "Apply automatic changes"
+        commit_message: "docs(pages): AUTO update data[BOT]."
+
+        # Optional. Options used by `git-commit`.
+        # See https://git-scm.com/docs/git-commit#_options
+        commit_options: "--no-verify --signoff"
+
+        # Optional glob pattern of files which should be added to the commit
+        # Defaults to all (.)
+        # See the `pathspec`-documentation for git
+        # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
+        # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
+        file_pattern: "docs/"
+
+        # Optional. Option used by `git-status` to determine if the repository is
+        # dirty. See https://git-scm.com/docs/git-status#_options
+        status_options: "--untracked-files=no"
+
+        # Optional. Options used by `git-add`.
+        # See https://git-scm.com/docs/git-add#_options
+        add_options: "-u"
+
+        # Optional. Skip internal call to `git fetch`
+        skip_fetch: true
+
+        # Optional. Skip internal call to `git checkout`
+        skip_checkout: true
+
+        # Optional. Prevents the shell from expanding filenames.
+        # Details: https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
+        disable_globbing: true
+
+    - if: steps.auto_commit.outputs.changes_detected == 'true'
+      run: echo "Update Done!"

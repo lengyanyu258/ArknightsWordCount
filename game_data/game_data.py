@@ -14,6 +14,7 @@ from .dump import Dump
 class GameData(Count, Dump):
     __unknown: dict[str, list[str]] = {"files": [], "commands": [], "heads": []}
 
+    __need_update: bool = False
     __updated: bool = False
     __counted: bool = False
 
@@ -81,8 +82,8 @@ class GameData(Count, Dump):
         return self.__date
 
     @property
-    def updated(self) -> bool:
-        return self.__updated
+    def need_update(self) -> bool:
+        return self.__need_update
 
     @Info("loading...")
     def __load_data(self):
@@ -101,11 +102,13 @@ class GameData(Count, Dump):
         self.__version = parse_version(content.split(":")[-1].strip())
         self.__date = date.fromisoformat(content.split()[-2].strip().replace("/", "-"))
 
-        old_version = parse_version(self.data["excel"]["gamedata_const"]["dataVersion"])
+        info_data = self.data.get("info", {}).get("data", {})
+        old_version = max(
+            parse_version(self.data["excel"]["gamedata_const"]["dataVersion"]),
+            parse_version(info_data.get("数据版本", "0.0.0")),
+        )
         if self.version > old_version:
-            info_data = self.data.get("info", {}).get("data", {})
-            if self.version > parse_version(info_data.get("数据版本", "0.0.0")):
-                self.update()
+            self.__need_update = True
 
     @Info("updating story...")
     def __update_story(self):

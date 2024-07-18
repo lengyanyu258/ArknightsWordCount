@@ -1,0 +1,56 @@
+name: Update Game Data
+
+on:
+  schedule:
+    # UTC time for 10:30 & 16:30 (UTC+8)
+    - cron: "30 2,8 * * *"
+  workflow_dispatch:
+
+# Global permissions configuration starts here
+permissions:
+  # 'write' access to repository contents
+  contents: write
+
+concurrency:
+  group: "update"
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cehckout root repo firstly.
+        uses: actions/checkout@v4
+
+      - name: Checkout ArknightsGameData Repo.
+        uses: actions/checkout@v4
+        with:
+          repository: "Kengxxiao/ArknightsGameData"
+          path: "Github/ArknightsGameData"
+          filter: "blob:none"
+          sparse-checkout: "zh_CN/gamedata/"
+
+      - name: Checkout ArknightsGameResource Repo.
+        uses: actions/checkout@v4
+        with:
+          repository: "yuanyan3060/ArknightsGameResource"
+          path: "Github/ArknightsGameResource"
+          filter: "blob:none"
+          sparse-checkout: "gamedata/"
+
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "poetry"
+      - name: Install Poetry Dependences.
+        run: poetry install
+
+      - name: Test if need update
+        id: test_update
+        run: poetry run python main.py --all --auto_update --test_update --no_dump
+
+      - if: steps.test_update.outputs.test_update == 'True'
+        name: Auto update data
+        uses: ./.github/actions/auto-update

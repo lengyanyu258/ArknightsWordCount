@@ -1,42 +1,29 @@
-from config import Config
+from .config import Config
+from .game_data import GameData
 
 
-def main():
+def manipulate(game_data: GameData):
     from datetime import datetime, timedelta, timezone
 
-    from game_data import GameData
-
-    data_dir_set = {data_dir_path}
-    if args.all:
-        data_dir_set.update({*Config.DATA_DIRS})
-
-    game_data_objs: list[GameData] = []
-    for data_dir in data_dir_set:
-        game_data_objs.append(
-            GameData(
-                data_dir_path=data_dir,
-                config=Config.game_data_config,
-                count_config=Config.count_config,
-                dump_config=Config.dump_config,
-                args=args,
-            )
-        )
-    game_data_objs.reverse()
-    for game_data in game_data_objs:
-        if game_data.updated:
-            break
-    else:
-        if args.auto_update:
+    # Used by GitHub Actions
+    if args.auto_update:
+        if not game_data.need_update:
             print("No need to update!")
-            return
-        game_data = game_data_objs[-1]
 
-    if args.update:
+        if args.test_update:
+            import os
+
+            # 设置环境变量以供 GitHub Actions 捕获
+            with open(os.environ["GITHUB_OUTPUT"], "a") as github_output:
+                print(f"test_update={game_data.need_update}", file=github_output)
+
+    if args.no_dump:
+        return
+
+    if args.update or game_data.need_update:
         game_data.update()
     if args.count:
         game_data.count()
-    if args.no_dump:
-        return
 
     datetime_now = datetime.now(timezone(timedelta(hours=8)))
     info = {
@@ -58,6 +45,32 @@ def main():
 
     if args.publish:
         game_data.publish(Config.xlsx_file_path, dumped_file)
+
+
+def main():
+    data_dir_set = {data_dir_path}
+    if args.all:
+        data_dir_set.update({*Config.DATA_DIRS})
+
+    game_data_objs: list[GameData] = []
+    for data_dir in data_dir_set:
+        game_data_objs.append(
+            GameData(
+                data_dir_path=data_dir,
+                config=Config.game_data_config,
+                count_config=Config.count_config,
+                dump_config=Config.dump_config,
+                args=args,
+            )
+        )
+    game_data_objs.reverse()
+    for game_data in game_data_objs:
+        if game_data.need_update:
+            break
+    else:
+        game_data = game_data_objs[-1]
+
+    manipulate(game_data)
 
 
 if __name__ == "__main__":
@@ -113,6 +126,11 @@ if __name__ == "__main__":
         "--all",
         action="store_true",
         help="Try to update all DATA_DIRS & Publish it.",
+    )
+    switch.add_argument(
+        "--test_update",
+        action="store_true",
+        help="Test Update by GitHub Action flag.",
     )
     switch.add_argument(
         "--auto_update",
