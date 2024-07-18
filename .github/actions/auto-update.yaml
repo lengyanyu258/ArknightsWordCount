@@ -1,36 +1,18 @@
 name: Auto Update & Commit
-description: "下载字体文件并执行脚本更新之后自动提交更改"
+description: "缓存字体文件并执行脚本更新之后自动提交更改"
 
 runs:
   using: "composite"
   steps:
-    - name: Download Sarasa Gothic Mono Slab SC TTF Release Asset
-      id: download_7z
-      uses: robinraju/release-downloader@v1.11
+    - uses: actions/cache@v4
+      id: cache-fonts
       with:
-        # The source repository path.
-        # Expected format {owner}/{repo}
-        # Default: ${{ github.repository }}
-        repository: "be5invis/Sarasa-Gothic"
+        path: tmp
+        key: SarasaMonoSlabSC-TTF-Unhinted-fonts-cache
 
-        # A flag to set the download target as latest release
-        # The default value is 'false'
-        latest: true
-
-        # The name of the file to download.
-        # Use this field only to specify filenames other than tarball or zipball, if any.
-        # Supports wildcard pattern (eg: '*', '*.deb', '*.zip' etc..)
-        fileName: "SarasaMonoSlabSC-TTF-Unhinted-*.7z"
-
-        # Relative path under $GITHUB_WORKSPACE to place the downloaded file(s)
-        # It will create the target directory automatically if not present
-        # eg: out-file-path: "my-downloads" => It will create directory $GITHUB_WORKSPACE/my-downloads
-        out-file-path: "tmp"
-
-    - name: Extract downloaded 7z file Asset
-      shell: bash
-      # p7zip-full is already the newest version (ubuntu-latest).
-      run: 7z x -t7z -otmp ${{ fromJson(steps.download_7z.outputs.downloaded_files)[0] }}
+    - name: Download Fonts (if not cached)
+      if: steps.cache-fonts.outputs.cache-hit != 'true'
+      uses: ./.github/actions/download-fonts
 
     - run: poetry run python main.py --all --auto_update --publish
 

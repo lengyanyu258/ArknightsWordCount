@@ -44,13 +44,12 @@ jobs:
         with:
           python-version: "3.11"
           cache: "poetry"
-      - name: Install Poetry Dependences.
-        run: poetry install
+      - run: poetry install
 
-      - name: Test if need update
+      - name: Test if need to update
         id: test_update
         run: poetry run python main.py --all --auto_update --test_update --no_dump
 
-      - if: steps.test_update.outputs.test_update == 'True'
-        name: Auto update data
+      - name: Proceed to update data
+        if: steps.test_update.outputs.test_update == 'True'
         uses: ./.github/actions/auto-update

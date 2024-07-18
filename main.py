@@ -7,7 +7,9 @@ def manipulate(game_data: GameData):
 
     # Used by GitHub Actions
     if args.auto_update:
-        if not game_data.need_update:
+        if game_data.need_update:
+            print("Need to update!")
+        else:
             print("No need to update!")
 
         if args.test_update:
