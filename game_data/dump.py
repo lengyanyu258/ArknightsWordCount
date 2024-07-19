@@ -228,17 +228,24 @@ class Dump(Base):
                 self.__COMMANDS,
             ]
         )
-        keys = list(dic["items"].keys())
+        items: dict[str, dict[str, dict]] = dic["items"].copy()
+
+        # 添加总计信息
+        if "info" in dic:
+            items["ALL"] = {"info": dic["info"]}
+            items["ALL"]["info"].pop("name", None)
+
+        keys = list(items.keys())
         sorted_keys = sorted(
             keys,
-            key=lambda k: dic["items"][k]["info"][sorted_info_key],
+            key=lambda k: items[k]["info"][sorted_info_key],
             reverse=True,
         )
         for index, k in enumerate(sorted_keys):
-            info_dict = dic["items"][k]["info"]
+            info_dict: dict[str, int] = items[k]["info"]
             sheet_overview_list.append(
                 [
-                    index + 1,
+                    index,
                     info_dict["name"] if "name" in info_dict else k,
                     info_dict["words"],
                     info_dict["punctuation"],
