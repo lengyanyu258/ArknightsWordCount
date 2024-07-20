@@ -1,7 +1,7 @@
 [tool.poetry]
 package-mode = false
 name = "arknights-word-count"
-version = "3.10.1"
+version = "3.10.2"
 description = "《明日方舟》字词统计"
 authors = ["Shawn Sun <lengyanyu258@outlook.com>"]
 license = "MIT"

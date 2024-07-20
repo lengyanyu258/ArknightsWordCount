@@ -232,7 +232,7 @@ class Dump(Base):
 
         # 添加总计信息
         if "info" in dic:
-            items["ALL"] = {"info": dic["info"]}
+            items["ALL"] = {"info": dic["info"].copy()}
             items["ALL"]["info"].pop("name", None)
 
         keys = list(items.keys())
