@@ -18,7 +18,7 @@ def manipulate(game_data: GameData):
 
         return
 
-    if args.update or game_data.need_update:
+    if args.update or game_data.need_update or args.auto_update:
         game_data.update()
     if args.count:
         game_data.count()
