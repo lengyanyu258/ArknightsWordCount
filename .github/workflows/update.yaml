@@ -1,4 +1,4 @@
-name: Update Game Data
+name: Update Game Data & Deploy to GitHub Pages
 
 on:
   # Runs on pushes targeting the default branch & docs/website/ directory
@@ -81,7 +81,7 @@ jobs:
 
       - name: Download Fonts (if not cached)
         if: steps.cache-fonts.outputs.cache-hit != 'true'
-        uses: ./.github/actions/download-fonts.yaml
+        uses: ./.github/actions/download-fonts
 
       - run: poetry run python main.py --all --auto_update --publish
 
@@ -124,7 +124,7 @@ jobs:
 
       - name: No need to deploy static content to Pages!
         if: steps.auto_commit.outputs.changes_detected != 'true'
-        run: echo "!" && exit 0
+        run: exit 0
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
