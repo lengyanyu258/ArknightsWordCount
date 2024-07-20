@@ -96,7 +96,7 @@ class GameData(Count, Dump):
             self.__pickle_file.parent.mkdir(parents=True)
 
         if self.__json_file.exists():
-            self.data.update(json.loads(self.__json_file.read_text(encoding="gb18030")))
+            self.data.update(json.loads(self.__json_file.read_text(encoding="utf-8")))
 
         content = self.__data_version_path.read_text(encoding="utf-8")
         self.__version = parse_version(content.split(":")[-1].strip())
@@ -107,7 +107,8 @@ class GameData(Count, Dump):
             parse_version(self.data["excel"]["gamedata_const"]["dataVersion"]),
             parse_version(info_data.get("数据版本", "0.0.0")),
         )
-        if self.version > old_version:
+        old_date = date.fromisoformat(info_data.get("数据日期", "2023-09-17"))
+        if self.version > old_version or self.date > old_date:
             self.__need_update = True
 
     @Info("updating story...")
@@ -177,39 +178,22 @@ class GameData(Count, Dump):
 
     @Info("publish file...")
     def publish(self, xlsx_file_path: str, dumped_file: Path):
-        import re
-
         published_file = Path(xlsx_file_path)
-        published_dir = published_file.parent
-        website_dir = published_dir / "website"
 
         # remove old xlsx files
-        for file_path in published_dir.rglob(f"*{published_file.suffix}"):
+        for file_path in published_file.parent.rglob(f"*{published_file.suffix}"):
             file_path.unlink()
 
-        # add new files
+        # add new xlsx files
         published_file.unlink(missing_ok=True)
         published_file.hardlink_to(target=dumped_file)
-        alternative_file = website_dir / dumped_file.name
-        alternative_file.unlink(missing_ok=True)
-        alternative_file.hardlink_to(target=dumped_file)
 
-        # modify the index.html file
-        index_html_file = website_dir / "index.html"
-        index_html_file.write_text(
-            re.sub(
-                rf"{published_file.stem}_?\d*\{published_file.suffix}",
-                alternative_file.name,
-                index_html_file.read_text(encoding="utf-8"),
-            ),
-            encoding="utf-8",
-        )
-
+        # dump json data
         self.__json_file.write_text(
             json.dumps(
                 {"info": self.data["info"]},
                 ensure_ascii=False,
                 indent=4,
             ),
-            encoding="gb18030",
+            encoding="utf-8",
         )

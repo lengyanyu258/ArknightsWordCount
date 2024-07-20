@@ -11,7 +11,6 @@ tmp/
 *.xlsx
 
 # Special files
-!arknights-word-count*.xlsx
 tmp.txt
 
 #

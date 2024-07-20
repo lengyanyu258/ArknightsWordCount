@@ -1,23 +1,41 @@
 name: Update Game Data
 
 on:
+  # Runs on pushes targeting the default branch & docs/website/ directory
+  push:
+    branches: ["main"]
+    paths: ["docs/website/**"]
+
   schedule:
-    # UTC time for 10:30 & 16:30 (UTC+8)
-    - cron: "30 2,8 * * *"
+    # UTC time for 10:30 & 16:10 (UTC+8)
+    - cron: "30 2 * * *"
+    - cron: "10 8 * * *"
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # Global permissions configuration starts here
 permissions:
   # 'write' access to repository contents
   contents: write
+  # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+  pages: write
+  id-token: write
 
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "update"
+  group: "update_pages"
   cancel-in-progress: false
 
 jobs:
   update:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
+
     steps:
       - name: Cehckout root repo firstly.
         uses: actions/checkout@v4
@@ -48,8 +66,79 @@ jobs:
 
       - name: Test if need to update
         id: test_update
-        run: poetry run python main.py --all --auto_update --test_update
+        run: poetry run python main.py --all --test_update
 
-      - name: Proceed to update data
-        if: steps.test_update.outputs.test_update == 'True'
-        uses: ./.github/actions/auto-update
+      - if: ${{ github.event_name == 'schedule' && steps.test_update.outputs.test_update == 'false' }}
+        run: echo "No need to update!" && exit 0
+
+      - run: echo "Need to update!"
+
+      - name: Fetch cache fonts
+        uses: actions/cache@v4
+        id: cache-fonts
+        with:
+          path: tmp
+          key: SarasaMonoSlabSC-TTF-Unhinted-fonts-cache
+
+      - name: Download Fonts (if not cached)
+        if: steps.cache-fonts.outputs.cache-hit != 'true'
+        uses: ./.github/actions/download-fonts
+
+      - run: poetry run python main.py --all --auto_update --publish
+
+      - name: Auto commit to repo.
+        id: auto_commit
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # Optional. Commit message for the created commit.
+          # Defaults to "Apply automatic changes"
+          commit_message: "docs(pages): [BOT]AUTO update data."
+
+          # Optional. Options used by `git-commit`.
+          # See https://git-scm.com/docs/git-commit#_options
+          commit_options: "--no-verify --signoff"
+
+          # Optional glob pattern of files which should be added to the commit
+          # Defaults to all (.)
+          # See the `pathspec`-documentation for git
+          # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
+          # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
+          file_pattern: "docs/"
+
+          # Optional. Option used by `git-status` to determine if the repository is
+          # dirty. See https://git-scm.com/docs/git-status#_options
+          status_options: "--untracked-files=no"
+
+          # Optional. Options used by `git-add`.
+          # See https://git-scm.com/docs/git-add#_options
+          add_options: "-u"
+
+          # Optional. Skip internal call to `git fetch`
+          skip_fetch: true
+
+          # Optional. Skip internal call to `git checkout`
+          skip_checkout: true
+
+          # Optional. Prevents the shell from expanding filenames.
+          # Details: https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
+          disable_globbing: true
+
+      - if: steps.auto_commit.outputs.changes_detected != 'true'
+        run: echo "No need to deploy!" && exit 0
+
+      - run: echo "Deploy static content to Pages"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload docs/website/ directory
+          path: "docs/website/"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - run: echo "Update & Deploy Done!"

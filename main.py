@@ -6,20 +6,17 @@ def manipulate(game_data: GameData):
     from datetime import datetime, timedelta, timezone
 
     # Used by GitHub Actions
-    if args.auto_update:
-        if game_data.need_update:
-            print("Need to update!")
-        else:
-            print("No need to update!")
+    if args.test_update:
+        import os
 
-        if args.test_update:
-            import os
+        # 设置环境变量以供 GitHub Actions 捕获
+        with open(os.environ["GITHUB_OUTPUT"], "a") as github_output:
+            print(
+                f"test_update={str(game_data.need_update).lower()}",
+                file=github_output,
+            )
 
-            # 设置环境变量以供 GitHub Actions 捕获
-            with open(os.environ["GITHUB_OUTPUT"], "a") as github_output:
-                print(f"test_update={game_data.need_update}", file=github_output)
-
-            return
+        return
 
     if args.update or game_data.need_update:
         game_data.update()

@@ -16,7 +16,7 @@ class Config:
     )
 
     info: dict[str, Any] = pyproject["tool"]["poetry"]
-    xlsx_file_path = f"./docs/{filename}.xlsx"
+    xlsx_file_path = f"./docs/website/{filename}.xlsx"
 
     game_data_config = Namespace(
         pickle_file_path=f"./tmp/{filename}.pkl",
