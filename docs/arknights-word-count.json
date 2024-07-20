@@ -2,11 +2,12 @@
     "info": {
         "title": "《明日方舟》字词统计",
         "data": {
-            "程序版本": "3.10.0",
+            "程序版本": "3.10.1",
             "数据版本": "52.2.0",
             "数据日期": "2024-07-10",
             "文档日期": "2024-07-21",
-            "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki"
+            "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki",
+            "其他说明": "06:08:17 自动更新"
         },
         "authors": [
             "Shawn Sun <lengyanyu258@outlook.com>"
