@@ -68,10 +68,9 @@ jobs:
         id: test_update
         run: poetry run python main.py --all --test_update
 
-      - if: ${{ github.event_name == 'schedule' && steps.test_update.outputs.test_update == 'false' }}
-        run: echo "No need to update!" && exit 0
-
-      - run: echo "Need to update!"
+      - name: No need to update!
+        if: ${{ github.event_name == 'schedule' && steps.test_update.outputs.test_update == 'false' }}
+        run: exit 0
 
       - name: Fetch cache fonts
         uses: actions/cache@v4
@@ -82,7 +81,7 @@ jobs:
 
       - name: Download Fonts (if not cached)
         if: steps.cache-fonts.outputs.cache-hit != 'true'
-        uses: ./.github/actions/download-fonts
+        uses: ./.github/actions/download-fonts.yaml
 
       - run: poetry run python main.py --all --auto_update --publish
 
@@ -123,10 +122,9 @@ jobs:
           # Details: https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
           disable_globbing: true
 
-      - if: steps.auto_commit.outputs.changes_detected != 'true'
-        run: echo "No need to deploy!" && exit 0
-
-      - run: echo "Deploy static content to Pages"
+      - name: No need to deploy static content to Pages!
+        if: steps.auto_commit.outputs.changes_detected != 'true'
+        run: echo "!" && exit 0
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
