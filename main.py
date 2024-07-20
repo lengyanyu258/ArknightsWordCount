@@ -19,13 +19,14 @@ def manipulate(game_data: GameData):
             with open(os.environ["GITHUB_OUTPUT"], "a") as github_output:
                 print(f"test_update={game_data.need_update}", file=github_output)
 
-    if args.no_dump:
-        return
+            return
 
     if args.update or game_data.need_update:
         game_data.update()
     if args.count:
         game_data.count()
+    if args.no_dump:
+        return
 
     datetime_now = datetime.now(timezone(timedelta(hours=8)))
     info = {

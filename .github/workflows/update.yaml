@@ -48,7 +48,7 @@ jobs:
 
       - name: Test if need to update
         id: test_update
-        run: poetry run python main.py --all --auto_update --test_update --no_dump
+        run: poetry run python main.py --all --auto_update --test_update
 
       - name: Proceed to update data
         if: steps.test_update.outputs.test_update == 'True'
