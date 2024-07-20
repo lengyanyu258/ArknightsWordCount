@@ -1,4 +1,4 @@
-name: Update Game Data & Deploy to GitHub Pages
+name: Update & Deploy Game Data
 
 on:
   # Runs on pushes targeting the default branch & docs/website/ directory
@@ -138,5 +138,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-      - run: echo "Update & Deploy Done!"
