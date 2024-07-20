@@ -1,3 +1,4 @@
+import time
 from functools import wraps
 from typing import Callable
 
@@ -29,9 +30,13 @@ class Info:
         def wrapper(*args, **kwargs):
             self.log_start(self.msg)
 
+            start_time = time.perf_counter()
             result = func(*args, **kwargs)
+            end_time = time.perf_counter()
 
-            self.log_stop(f"{('D', 'd')[self.msg[0].islower()]}one.")
+            self.log_stop(
+                f"{('D', 'd')[self.msg[0].islower()]}one in {end_time - start_time:.3f} seconds."
+            )
 
             return result
 
