@@ -55,10 +55,10 @@ jobs:
           cache: "poetry"
       - run: poetry install
 
-      - name: Test if need to update
-        id: test_update
+      - name: Check if need to update
+        id: check_update
         run: poetry run python main.py --all --test_update
 
       - name: Proceed to Update & Commit to Deploy
-        if: ${{ github.event_name != 'schedule' || steps.test_update.outputs.test_update == 'true' }}
+        if: ${{ github.event_name != 'schedule' || steps.check_update.outputs.test_update == 'true' }}
         uses: ./.github/actions/auto-update

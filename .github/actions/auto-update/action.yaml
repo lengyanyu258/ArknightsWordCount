@@ -1,4 +1,4 @@
-name: Proceed to Update & Commit
+name: Proceed to Update & Commit to Deploy
 description: "下载字体缓存后更新数据，自动提交至仓库后进行部署"
 
 runs:
