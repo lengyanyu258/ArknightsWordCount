@@ -1,11 +1,7 @@
 name: Update & Deploy Game Data
+run-name: Update by @${{ github.actor }}
 
 on:
-  # Runs on pushes targeting the default branch & docs/website/ directory
-  push:
-    branches: ["main"]
-    paths: ["docs/website/**"]
-
   schedule:
     # UTC time for 10:30 & 16:10 (UTC+8)
     - cron: "30 2 * * *"
