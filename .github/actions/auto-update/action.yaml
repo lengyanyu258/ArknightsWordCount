@@ -5,6 +5,7 @@ runs:
   using: "composite"
   steps:
     - run: poetry run python main.py --all --auto_update --publish
+      shell: bash
 
     - name: Auto commit to repo.
       uses: stefanzweifel/git-auto-commit-action@v5
