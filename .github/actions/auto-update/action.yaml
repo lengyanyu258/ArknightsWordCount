@@ -1,9 +1,20 @@
-name: Auto Update & Commit
-description: "更新并自动提交至仓库"
+name: Proceed to Update & Commit
+description: "下载字体缓存后更新数据，自动提交至仓库后进行部署"
 
 runs:
   using: "composite"
   steps:
+    - name: Fetch cache fonts
+      uses: actions/cache@v4
+      id: cache-fonts
+      with:
+        path: tmp
+        key: SarasaMonoSlabSC-TTF-Unhinted-fonts-cache
+
+    - name: Download Fonts (if not cached)
+      if: steps.cache-fonts.outputs.cache-hit != 'true'
+      uses: ./.github/actions/download-fonts
+
     - run: poetry run python main.py --all --auto_update --publish
       shell: bash
 
@@ -42,3 +53,15 @@ runs:
         # Optional. Prevents the shell from expanding filenames.
         # Details: https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
         disable_globbing: true
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        # Upload docs/website/ directory
+        path: "docs/website/"
+
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
