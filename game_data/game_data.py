@@ -178,15 +178,30 @@ class GameData(Count, Dump):
 
     @Info("publish file...")
     def publish(self, xlsx_file_path: str, dumped_file: Path):
+        import re
+
         published_file = Path(xlsx_file_path)
+        website_dir = published_file.parent
 
         # remove old xlsx files
-        for file_path in published_file.parent.rglob(f"*{published_file.suffix}"):
+        for file_path in website_dir.rglob(f"*{published_file.suffix}"):
             file_path.unlink()
 
         # add new xlsx files
-        published_file.unlink(missing_ok=True)
         published_file.hardlink_to(target=dumped_file)
+        alternative_file = website_dir / dumped_file.name
+        alternative_file.hardlink_to(target=dumped_file)
+
+        # modify the index.html file
+        index_html_file = website_dir / "index.html"
+        index_html_file.write_text(
+            re.sub(
+                rf"{published_file.stem}_?\d*\{published_file.suffix}",
+                alternative_file.name,
+                index_html_file.read_text(encoding="utf-8"),
+            ),
+            encoding="utf-8",
+        )
 
         # dump json data
         self.__json_file.write_text(
