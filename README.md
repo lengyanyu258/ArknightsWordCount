@@ -1,5 +1,7 @@
 # ArknightsWordCount
 
+[![Update & Deploy Game Data](https://github.com/lengyanyu258/ArknightsWordCount/actions/workflows/update.yaml/badge.svg)](https://github.com/lengyanyu258/ArknightsWordCount/actions/workflows/update.yaml)
+
 《明日方舟》字词统计
 
 ## 说明
@@ -21,15 +23,3 @@ poetry install
 
 python main.py -h
 ```
-
-## 其他
-
-[配置文件（config.py）](https://github.com/lengyanyu258/ArknightsWordCount/blob/main/config.py)中的 `merge_names` 记录的是同一人在文本中出现过的不同名称，比如：
-
-> 微光守夜人 -> 不叫微光守夜人的黎博利 -> 菲亚梅塔
->
-> 恩希欧迪斯 -> 银灰
->
-> 阿黛尔 -> 艾雅法拉
-
-目前该内容尚未收录全，仍需要建设，欢迎大家[参与](https://github.com/lengyanyu258/ArknightsWordCount/edit/main/config.py)！
