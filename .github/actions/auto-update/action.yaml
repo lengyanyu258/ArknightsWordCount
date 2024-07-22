@@ -36,6 +36,9 @@ runs:
         # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
         file_pattern: "docs/"
 
+        # Optional commit user and author settings
+        commit_author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
         # Optional. Option used by `git-status` to determine if the repository is
         # dirty. See https://git-scm.com/docs/git-status#_options
         status_options: "--untracked-files=no"
