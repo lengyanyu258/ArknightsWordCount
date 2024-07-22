@@ -26,6 +26,9 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: https://lengyanyu258.github.io/ArknightsWordCount/
 
     steps:
       - name: Cehckout root repo firstly.
