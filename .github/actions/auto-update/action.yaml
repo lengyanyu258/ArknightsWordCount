@@ -1,10 +1,6 @@
 name: Proceed to Update & Commit
 description: "下载字体缓存后更新数据并自动提交至仓库"
 
-defaults:
-  run:
-    shell: bash
-
 runs:
   using: "composite"
   steps:
@@ -20,6 +16,7 @@ runs:
       uses: ./.github/actions/download-fonts
 
     - run: poetry run python main.py --all --auto_update --publish
+      shell: bash
 
     - name: Auto commit to repo.
       uses: stefanzweifel/git-auto-commit-action@v5

@@ -1,10 +1,6 @@
 name: Prepare Dependences
 description: "准备环境依赖"
 
-defaults:
-  run:
-    shell: bash
-
 runs:
   using: "composite"
   steps:
@@ -26,8 +22,12 @@ runs:
 
     - name: Install poetry
       run: pipx install poetry
+      shell: bash
+
     - uses: actions/setup-python@v5
       with:
         python-version: "3.11"
         cache: "poetry"
+
     - run: poetry install
+      shell: bash

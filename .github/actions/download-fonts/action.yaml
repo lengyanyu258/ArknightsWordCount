@@ -1,10 +1,6 @@
 name: Download & Extract Fonts
 description: "下载字体文件"
 
-defaults:
-  run:
-    shell: bash
-
 runs:
   using: "composite"
   steps:
@@ -34,3 +30,4 @@ runs:
     - name: Extract downloaded 7z file Asset
       # p7zip-full is already the newest version (ubuntu-latest).
       run: 7z x -t7z -otmp ${{ fromJson(steps.download_7z.outputs.downloaded_files)[0] }}
+      shell: bash
