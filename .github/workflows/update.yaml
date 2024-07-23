@@ -32,6 +32,9 @@ jobs:
       result: ${{ steps.condition.outputs.need_update }}
 
     steps:
+      - name: Cehckout root repo firstly.
+        uses: actions/checkout@v4
+
       - name: Preparing job
         uses: ./.github/actions/prepare-dependences
 
@@ -61,6 +64,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Cehckout root repo firstly.
+        uses: actions/checkout@v4
+
       - name: Preparing job
         uses: ./.github/actions/prepare-dependences
 

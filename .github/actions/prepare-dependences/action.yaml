@@ -4,9 +4,6 @@ description: "准备环境依赖"
 runs:
   using: "composite"
   steps:
-    - name: Cehckout root repo firstly.
-      uses: actions/checkout@v4
-
     - name: Checkout ArknightsGameData Repo.
       uses: actions/checkout@v4
       with:
