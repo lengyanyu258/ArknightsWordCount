@@ -1,6 +1,10 @@
 name: Prepare Dependences
 description: "准备环境依赖"
 
+defaults:
+  run:
+    shell: bash
+
 runs:
   using: "composite"
   steps:
