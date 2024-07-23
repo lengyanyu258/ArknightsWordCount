@@ -1,5 +1,5 @@
-name: Proceed to Update & Commit to Deploy
-description: "下载字体缓存后更新数据，自动提交至仓库后进行部署"
+name: Proceed to Update & Commit
+description: "下载字体缓存后更新数据并自动提交至仓库"
 
 runs:
   using: "composite"
@@ -16,7 +16,6 @@ runs:
       uses: ./.github/actions/download-fonts
 
     - run: poetry run python main.py --all --auto_update --publish
-      shell: bash
 
     - name: Auto commit to repo.
       uses: stefanzweifel/git-auto-commit-action@v5
@@ -56,15 +55,3 @@ runs:
         # Optional. Prevents the shell from expanding filenames.
         # Details: https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
         disable_globbing: true
-
-    - name: Setup Pages
-      uses: actions/configure-pages@v5
-
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        # Upload docs/website/ directory
-        path: "docs/website/"
-
-    - name: Deploy to GitHub Pages
-      uses: actions/deploy-pages@v4

@@ -13,9 +13,10 @@ on:
 permissions:
   # 'write' access to repository contents
   contents: write
-  # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-  pages: write
-  id-token: write
+
+defaults:
+  run:
+    shell: bash
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -24,44 +25,57 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  update:
+  check_update:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: https://lengyanyu258.github.io/ArknightsWordCount/
+
+    outputs:
+      result: ${{ steps.condition.outputs.need_update }}
 
     steps:
-      - name: Cehckout root repo firstly.
-        uses: actions/checkout@v4
-
-      - name: Checkout ArknightsGameData Repo.
-        uses: actions/checkout@v4
-        with:
-          repository: "Kengxxiao/ArknightsGameData"
-          path: "Github/ArknightsGameData"
-          filter: "blob:none"
-          sparse-checkout: "zh_CN/gamedata/"
-
-      - name: Checkout ArknightsGameResource Repo.
-        uses: actions/checkout@v4
-        with:
-          repository: "yuanyan3060/ArknightsGameResource"
-          path: "Github/ArknightsGameResource"
-          filter: "blob:none"
-          sparse-checkout: "gamedata/"
-
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "poetry"
-      - run: poetry install
+      - name: Preparing job
+        uses: ./.github/actions/prepare-dependences
 
       - name: Check if need to update
         id: check_update
         run: poetry run python main.py --all --test_update
 
-      - name: Proceed to Update & Commit to Deploy
+      - name: Set Condition
+        id: condition
         if: ${{ github.event_name != 'schedule' || steps.check_update.outputs.test_update == 'true' }}
+        run: echo "need_update=true" >> "$GITHUB_OUTPUT"
+
+  update_deploy:
+    permissions:
+      # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+      pages: write
+      id-token: write
+
+    needs: check_update
+
+    if: ${{ needs.check_update.outputs.result == 'true' }}
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Preparing job
+        uses: ./.github/actions/prepare-dependences
+
+      - name: Proceed to Update & Commit
         uses: ./.github/actions/auto-update
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload docs/website/ directory
+          path: "docs/website/"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

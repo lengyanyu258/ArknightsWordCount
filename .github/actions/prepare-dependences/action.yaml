@@ -1,0 +1,32 @@
+name: Prepare Dependences
+description: "准备环境依赖"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cehckout root repo firstly.
+      uses: actions/checkout@v4
+
+    - name: Checkout ArknightsGameData Repo.
+      uses: actions/checkout@v4
+      with:
+        repository: "Kengxxiao/ArknightsGameData"
+        path: "Github/ArknightsGameData"
+        filter: "blob:none"
+        sparse-checkout: "zh_CN/gamedata/"
+
+    - name: Checkout ArknightsGameResource Repo.
+      uses: actions/checkout@v4
+      with:
+        repository: "yuanyan3060/ArknightsGameResource"
+        path: "Github/ArknightsGameResource"
+        filter: "blob:none"
+        sparse-checkout: "gamedata/"
+
+    - name: Install poetry
+      run: pipx install poetry
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: "poetry"
+    - run: poetry install
