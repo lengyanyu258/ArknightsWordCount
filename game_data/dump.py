@@ -1,6 +1,7 @@
 import datetime
 import re
 from argparse import Namespace
+from collections import Counter
 from itertools import product
 from pathlib import Path
 from typing import Any
@@ -132,6 +133,7 @@ class Dump(Base):
         sheet_list: list,
         number: int | None = 10,
         is_show_counter: bool = True,
+        is_show_all: bool = False,
     ):
         """生成按字词数排序的台词量统计
 
@@ -142,6 +144,7 @@ class Dump(Base):
             number (int | None, optional): 要生成的总数. Defaults to 10.
             is_show_counter (bool, optional): Print `Counter` cell left beside `Index` title. Defaults to True.
         """
+
         sheet_list.append(
             [None] * tab_time
             + (["Counter"] if is_show_counter else [])
@@ -153,17 +156,31 @@ class Dump(Base):
                 self.__ELLIPSIS,
             ]
         )
+
+        if is_show_all:
+            counter = Counter()
+            for name in info_dict["counter"]:
+                counter.update(
+                    {
+                        "words": info_dict["counter"][name]["words"],
+                        "punctuation": info_dict["counter"][name]["punctuation"],
+                        "ellipsis": info_dict["counter"][name]["ellipsis"],
+                    }
+                )
+            info_dict["counter"]["ALL"] = dict(counter)
+
         sorted_counter_items = sorted(
             info_dict["counter"].items(),
             key=lambda item: item[1]["words"],
             reverse=True,
         )
+
         for index, item in enumerate(sorted_counter_items[:number]):
             sheet_list.append(
                 [None] * tab_time
                 + ([None] if is_show_counter else [])
                 + [
-                    index + 1,
+                    index if is_show_all else index + 1,
                     item[0],
                     item[1]["words"],
                     item[1]["punctuation"],
@@ -542,9 +559,10 @@ class Dump(Base):
         amend_sheet_list(sheet_overview_list)
         sheets_overview_list.append(sheet_overview_list)
 
+        # 『台词』表单
         sheet_counter_list.append(["台词量统计"])
         self.__gen_sorted_counter_data(
-            0, self.data["count"]["info"], sheet_counter_list, None, False
+            0, self.data["count"]["info"], sheet_counter_list, None, False, True
         )
         amend_sheet_list(sheet_counter_list)
 
