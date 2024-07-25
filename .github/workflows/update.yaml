@@ -13,6 +13,9 @@ on:
 permissions:
   # 'write' access to repository contents
   contents: write
+  # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+  pages: write
+  id-token: write
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -44,11 +47,6 @@ jobs:
         run: echo "need_update=true" >> "$GITHUB_OUTPUT"
 
   update_deploy:
-    permissions:
-      # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-      pages: write
-      id-token: write
-
     needs: check_update
 
     if: ${{ needs.check_update.outputs.result == 'true' }}
