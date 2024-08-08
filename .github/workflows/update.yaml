@@ -41,7 +41,7 @@ jobs:
         id: check_update
         run: poetry run python main.py --all --test_update
 
-      - name: Set Condition
+      - name: Set `need_update` Condition
         id: condition
         if: ${{ github.event_name != 'schedule' || steps.check_update.outputs.test_update == 'true' }}
         run: echo "need_update=true" >> "$GITHUB_OUTPUT"

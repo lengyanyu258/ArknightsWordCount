@@ -23,7 +23,7 @@ runs:
       with:
         # Optional. Commit message for the created commit.
         # Defaults to "Apply automatic changes"
-        commit_message: "docs(pages): AUTO update data."
+        commit_message: "ci(update): AUTO update docs data."
 
         # Optional. Options used by `git-commit`.
         # See https://git-scm.com/docs/git-commit#_options
