@@ -247,8 +247,10 @@ class Dump(Base):
         )
         items: dict[str, dict[str, dict]] = dic["items"].copy()
 
+        index_offset = 1
         # 添加总计信息
         if "info" in dic:
+            index_offset = 0
             items["ALL"] = {"info": dic["info"].copy()}
             items["ALL"]["info"].pop("name", None)
 
@@ -262,7 +264,7 @@ class Dump(Base):
             info_dict: dict[str, int] = items[k]["info"]
             sheet_overview_list.append(
                 [
-                    index,
+                    index + index_offset,
                     info_dict["name"] if "name" in info_dict else k,
                     info_dict["words"],
                     info_dict["punctuation"],
