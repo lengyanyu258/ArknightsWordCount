@@ -95,19 +95,24 @@ class GameData(Count, Dump):
         elif not self.__pickle_file.parent.exists():
             self.__pickle_file.parent.mkdir(parents=True)
 
-        if self.__json_file.exists():
-            self.data.update(json.loads(self.__json_file.read_text(encoding="utf-8")))
-
         content = self.__data_version_path.read_text(encoding="utf-8")
         self.__version = parse_version(content.split(":")[-1].strip())
         self.__date = date.fromisoformat(content.split()[-2].strip().replace("/", "-"))
 
-        info_data = self.data.get("info", {}).get("data", {})
+        info_data = self.data["info"]["data"]
+        json_data = info_data.copy()
+        if self.__json_file.exists():
+            json_data = json.loads(self.__json_file.read_text(encoding="utf-8"))
+
         old_version = max(
             parse_version(self.data["excel"]["gamedata_const"]["dataVersion"]),
             parse_version(info_data.get("数据版本", "0.0.0")),
+            parse_version(json_data["info"]["data"]["数据版本"]),
         )
-        old_date = date.fromisoformat(info_data.get("数据日期", "2023-09-17"))
+        old_date = max(
+            date.fromisoformat(info_data.get("数据日期", "2023-09-17")),
+            date.fromisoformat(json_data["info"]["data"]["数据日期"]),
+        )
         if self.version > old_version or self.date > old_date:
             self.__need_update = True
 
@@ -172,8 +177,7 @@ class GameData(Count, Dump):
         self.__pickle_file.write_bytes(pickle.dumps(self.data))
 
     @Info("start dumping...")
-    def dump(self, info: dict) -> Path:
-        self.data["info"] = info
+    def dump(self) -> Path:
         return self.dump_excel()
 
     @Info("publish file...")

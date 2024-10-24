@@ -14,7 +14,7 @@ class Base(object):
         },
         "story": {},
         "count": {"info": {}, "items": {}},
-        "info": {},
+        "info": {"data": {}},
     }
 
 

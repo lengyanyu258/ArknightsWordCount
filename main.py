@@ -2,7 +2,7 @@ from config import Config
 from game_data import GameData
 
 
-def manipulate(game_data: GameData):
+def manipulate(game: GameData):
     from datetime import datetime, timedelta, timezone
 
     # Used by GitHub Actions
@@ -12,39 +12,39 @@ def manipulate(game_data: GameData):
         # 设置环境变量以供 GitHub Actions 捕获
         with open(os.environ["GITHUB_OUTPUT"], "a") as github_output:
             print(
-                f"test_update={str(game_data.need_update).lower()}",
+                f"test_update={str(game.need_update).lower()}",
                 file=github_output,
             )
 
         return
 
-    if args.update or game_data.need_update or args.auto_update:
-        game_data.update()
-    if args.count:
-        game_data.count()
-    if args.no_dump:
-        return
-
     datetime_now = datetime.now(timezone(timedelta(hours=8)))
-    info = {
+    game.data["info"] = {
         "title": Config.info["description"],
         "data": {
             "程序版本": Config.info["version"],
-            "数据版本": ".".join(map(lambda x: str(x), game_data.version)),
-            "数据日期": game_data.date.isoformat(),
+            "数据版本": ".".join(map(lambda x: str(x), game.version)),
+            "数据日期": game.date.isoformat(),
             "文档日期": datetime_now.date().isoformat(),
             "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki",
         },
         "authors": Config.info["authors"],
     }
+    if args.update or game.need_update or args.auto_update:
+        game.update()
+    if args.count:
+        game.count()
+    if args.no_dump:
+        return
+
     if args.auto_update:
-        info["data"][
+        game.data["info"]["data"][
             "其他说明"
         ] = f"{datetime_now.time().isoformat(timespec='seconds')} 自动更新"
-    dumped_file = game_data.dump(info)
+    dumped_file = game.dump()
 
     if args.publish:
-        game_data.publish(Config.xlsx_file_path, dumped_file)
+        game.publish(Config.xlsx_file_path, dumped_file)
 
 
 def main():
