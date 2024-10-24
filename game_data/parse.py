@@ -69,6 +69,7 @@ class Parse(Base):
             "VoiceWithin",
             "dialog",
             "warp",
+            "animtext",
         ):
             # TODO: dialog(head="npc_694_1" 文 activity_table charCardMap
             try:
@@ -121,7 +122,10 @@ class Parse(Base):
         elif control_command in ("narration", "Narration", "isAvatarRight"):
             name = self.__ASIDE_NAME
         elif control_command in ("multiline"):
-            name = get_attribute(command)
+            try:
+                name = get_attribute(command)
+            except IndexError:
+                name = self.__ASIDE_NAME
         else:
             name = ""
             if self.__debug and control_command not in self.__unknown_commands:

@@ -74,6 +74,7 @@ class Config:
             "addfavor",
             "additem",
             "AddItem",
+            "animtextclean",
             "avatarId",
             "background",
             "Background",
