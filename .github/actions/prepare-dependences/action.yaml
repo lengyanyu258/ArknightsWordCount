@@ -10,9 +10,7 @@ runs:
         repository: "Kengxxiao/ArknightsGameData"
         path: "Github/ArknightsGameData"
         filter: "blob:none"
-        sparse-checkout: |
-          "zh_CN/gamedata/excel"
-          "zh_CN/gamedata/story"
+        sparse-checkout: "zh_CN/gamedata/"
 
     - name: Checkout ArknightsGameResource Repo.
       uses: actions/checkout@v4
@@ -20,9 +18,7 @@ runs:
         repository: "yuanyan3060/ArknightsGameResource"
         path: "Github/ArknightsGameResource"
         filter: "blob:none"
-        sparse-checkout: |
-          "gamedata/excel"
-          "gamedata/story"
+        sparse-checkout: "gamedata/"
 
     - name: Install poetry
       run: pipx install poetry
