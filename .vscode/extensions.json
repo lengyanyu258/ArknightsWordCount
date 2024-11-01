@@ -3,6 +3,7 @@
     "ms-python.black-formatter",
     "ms-python.isort",
     "sonarsource.sonarlint-vscode",
-    "njpwerner.autodocstring"
+    "njpwerner.autodocstring",
+    "tamasfe.even-better-toml"
   ]
 }
