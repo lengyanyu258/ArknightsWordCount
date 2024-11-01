@@ -5,6 +5,8 @@ from game_data import GameData
 def manipulate(game: GameData):
     from datetime import datetime, timedelta, timezone
 
+    print("Current GameData Dir:", game.data_dir)
+
     # Used by GitHub Actions
     if args.test_update:
         import os
@@ -35,6 +37,7 @@ def manipulate(game: GameData):
     if args.count:
         game.count()
     if args.no_dump:
+        print("No dump file will be generated.")
         return
 
     if args.auto_update:
@@ -54,15 +57,19 @@ def main():
 
     game_data_objs: list[GameData] = []
     for data_dir in data_dir_set:
-        game_data_objs.append(
-            GameData(
-                data_dir_path=data_dir,
-                config=Config.game_data_config,
-                count_config=Config.count_config,
-                dump_config=Config.dump_config,
-                args=args,
+        try:
+            game_data_objs.append(
+                GameData(
+                    data_dir_path=data_dir,
+                    config=Config.game_data_config,
+                    count_config=Config.count_config,
+                    dump_config=Config.dump_config,
+                    args=args,
+                )
             )
-        )
+        except NotADirectoryError as e:
+            print(f"{data_dir} 数据目录不存在或无法读取: {e}")
+            continue
     game_data_objs.reverse()
     for game_data in game_data_objs:
         if game_data.need_update:

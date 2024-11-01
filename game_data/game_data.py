@@ -26,9 +26,9 @@ class GameData(Count, Dump):
         dump_config: Namespace,
         args: Namespace,
     ):
-        data_dir = Path(data_dir_path)
-        if not data_dir.is_dir():
-            raise NotADirectoryError(f"{data_dir.absolute()} is not a directory!")
+        self.data_dir = Path(data_dir_path)
+        if not self.data_dir.is_dir():
+            raise NotADirectoryError(f"{self.data_dir.absolute()} is not a directory!")
 
         self.__pickle_file = Path(config.pickle_file_path)
         self.__json_file = Path(config.json_file_path)
@@ -51,8 +51,8 @@ class GameData(Count, Dump):
             f"{self.__pickle_file.stem}_unknown_files.txt"
         )
 
-        excel_dir = data_dir / "excel"
-        self.__story_dir = data_dir / "story"
+        excel_dir = self.data_dir / "excel"
+        self.__story_dir = self.data_dir / "story"
 
         self.__data_version_path = excel_dir / "data_version.txt"
         if not self.__data_version_path.exists():
