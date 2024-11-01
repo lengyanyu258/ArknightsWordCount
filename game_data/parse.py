@@ -66,6 +66,7 @@ class Parse(Base):
         elif control_command in (
             "Dialog",
             "PopupDialog",
+            "popupdialog",
             "VoiceWithin",
             "dialog",
             "warp",
