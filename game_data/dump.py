@@ -184,7 +184,7 @@ class Dump(Base):
                     item[0],
                     item[1]["words"],
                     item[1]["punctuation"],
-                    item[1]["ellipsis"],
+                    f'({item[1]["ellipsis"]})',
                 ]
             )
 
@@ -268,7 +268,7 @@ class Dump(Base):
                     info_dict["name"] if "name" in info_dict else k,
                     info_dict["words"],
                     info_dict["punctuation"],
-                    info_dict["ellipsis"],
+                    f'({info_dict["ellipsis"]})',
                     info_dict["commands"],
                 ]
             )
@@ -280,6 +280,7 @@ class Dump(Base):
             content_bar = [
                 info_dict[key] if key in dic["info"] else None for key in keys_list
             ]
+            content_bar[-2] = f"({content_bar[-2]})"  # 给“省略号”带上括号以表示包含关系
             sheet_simple_list.append([None, index] + content_bar)
 
         keys_list = ["name", "words", "punctuation", "ellipsis", "commands"]
@@ -377,6 +378,8 @@ class Dump(Base):
 
                 # Name column: Horizontal Alignment Center
                 overview[:, idx_column + 1].set_format(Props.center)
+                # “省略号”列
+                overview[:, idx_column + 4].set_format(Props.right)
 
                 # Index region: Border Line Style
                 overview[row, idx_column].expand().set_format(Props.border)
@@ -435,6 +438,10 @@ class Dump(Base):
         for row, row_data in enumerate(simple.cells):
             for idx_column in find_indices(row_data, self.__WORDS):
                 simple[row, idx_column].expand("right").set_format(Props.center)
+                # “省略号”列
+                simple[row, idx_column].current_region[row + 1 :, -2].set_format(
+                    Props.right
+                )
 
                 # Left column: Horizontal Alignment Right
                 left_cell = simple[row, idx_column].end("left", time=2).current
@@ -454,6 +461,8 @@ class Dump(Base):
         idx_col = find_index(counter.cells[idx_row], "Index")
         # Name column: Horizontal Alignment Center
         counter[:, idx_col + 1].set_format(Props.center)
+        # “省略号”列
+        counter[:, idx_col + 4].set_format(Props.right)
         # Index region: Border Line Style
         counter[idx_row, idx_col].expand().set_format(Props.border)
         # Title column: Font Bold

@@ -31,6 +31,7 @@ def check_index(index: int, index_range: Axis) -> int:
     if index < 0:
         return index % (index_range.right + 1)
 
+    # TODO: return index_range.left + index % (index_range.right - index_range.left) ?
     if index < index_range.left or index > index_range.right:
         raise IndexError(f"Out of index: {index} not in range {index_range}!")
 
