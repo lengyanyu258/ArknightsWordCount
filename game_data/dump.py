@@ -184,7 +184,7 @@ class Dump(Base):
                     item[0],
                     item[1]["words"],
                     item[1]["punctuation"],
-                    f'({item[1]["ellipsis"]})',
+                    item[1]["ellipsis"],
                 ]
             )
 
@@ -268,7 +268,7 @@ class Dump(Base):
                     info_dict["name"] if "name" in info_dict else k,
                     info_dict["words"],
                     info_dict["punctuation"],
-                    f'({info_dict["ellipsis"]})',
+                    info_dict["ellipsis"],
                     info_dict["commands"],
                 ]
             )
@@ -280,7 +280,6 @@ class Dump(Base):
             content_bar = [
                 info_dict[key] if key in dic["info"] else None for key in keys_list
             ]
-            content_bar[-2] = f"({content_bar[-2]})"  # 给“省略号”带上括号以表示包含关系
             sheet_simple_list.append([None, index] + content_bar)
 
         keys_list = ["name", "words", "punctuation", "ellipsis", "commands"]
@@ -379,7 +378,7 @@ class Dump(Base):
                 # Name column: Horizontal Alignment Center
                 overview[:, idx_column + 1].set_format(Props.center)
                 # “省略号”列
-                overview[:, idx_column + 4].set_format(Props.right)
+                overview[:, idx_column + 4].set_format({"num_format": "(0)"})
 
                 # Index region: Border Line Style
                 overview[row, idx_column].expand().set_format(Props.border)
@@ -440,7 +439,7 @@ class Dump(Base):
                 simple[row, idx_column].expand("right").set_format(Props.center)
                 # “省略号”列
                 simple[row, idx_column].current_region[row + 1 :, -2].set_format(
-                    Props.right
+                    {"num_format": "(0)"}
                 )
 
                 # Left column: Horizontal Alignment Right
@@ -462,7 +461,7 @@ class Dump(Base):
         # Name column: Horizontal Alignment Center
         counter[:, idx_col + 1].set_format(Props.center)
         # “省略号”列
-        counter[:, idx_col + 4].set_format(Props.right)
+        counter[:, idx_col + 4].set_format({"num_format": "(0)"})
         # Index region: Border Line Style
         counter[idx_row, idx_col].expand().set_format(Props.border)
         # Title column: Font Bold
