@@ -12,6 +12,7 @@ def manipulate(game: GameData):
         import os
 
         # 设置环境变量以供 GitHub Actions 捕获
+        # 如果是手动执行，则会强制更新：need_update = github.event_name != 'schedule' || test_update
         with open(os.environ["GITHUB_OUTPUT"], "a") as github_output:
             print(
                 f"test_update={str(game.need_update).lower()}",
@@ -47,13 +48,13 @@ def manipulate(game: GameData):
         event_name = os.getenv("GITHUB_EVENT_NAME", "unknown")
 
         # 根据触发事件打印不同的消息
-        other_info = f"{datetime_now.time().isoformat(timespec='seconds')}"
+        other_info = datetime_now.time().isoformat(timespec="seconds")
         if event_name == "workflow_dispatch":
-            other_info += " 手动更新"
-        elif event_name in ["push", "pull_request"]:
-            other_info += " 自动更新"
+            other_info = f"{other_info} 手动更新"
+        elif event_name in ["push", "pull_request", "schedule"]:
+            other_info = f"{other_info} 自动更新"
         else:
-            other_info += f" by {event_name}"
+            other_info = f"{other_info} update by {event_name}"
 
         game.data["info"]["data"]["其他说明"] = other_info
 
