@@ -41,9 +41,22 @@ def manipulate(game: GameData):
         return
 
     if args.auto_update:
-        game.data["info"]["data"][
-            "其他说明"
-        ] = f"{datetime_now.time().isoformat(timespec='seconds')} 自动更新"
+        import os
+
+        # 读取环境变量
+        event_name = os.getenv("GITHUB_EVENT_NAME", "unknown")
+
+        # 根据触发事件打印不同的消息
+        other_info = f"{datetime_now.time().isoformat(timespec='seconds')}"
+        if event_name == "workflow_dispatch":
+            other_info += " 手动更新"
+        elif event_name in ["push", "pull_request"]:
+            other_info += " 自动更新"
+        else:
+            other_info += f" by {event_name}"
+
+        game.data["info"]["data"]["其他说明"] = other_info
+
     dumped_file = game.dump()
 
     if args.publish:
