@@ -7,8 +7,9 @@ from pathlib import Path
 from typing import Any
 
 from .base import Base, Info
+from .excel import CellFormatProperties as Props
 from .excel import Sheet
-from .utils import amend_sheet_list, merge_sheets_list
+from .utils import amend_sheet_list, find_index, find_indices, merge_sheets_list
 
 
 class Dump(Base):
@@ -360,12 +361,8 @@ class Dump(Base):
                 merge_sheets_list([story_digest, story_list], False)
             )
 
-    @Info("style formatting...")
-    def __gen_sheet_style(self, overview: Sheet, simple: Sheet, counter: Sheet):
-        from .excel import CellFormatProperties as Props
-        from .utils import find_index, find_indices
-
-        # 『概观』表单
+    # @Info("gen overview sheet style...")
+    def __gen_overview_sheet_style(self, overview: Sheet):
         overview.default_format_properties.update(
             {"font_name": self.__FONT_NAME, "font_size": 14}
         )
@@ -411,6 +408,7 @@ class Dump(Base):
         # Cells 'ALL' region:
         all_region = overview[0, 0].end("down", time=2).current_region
         all_region.autofit()
+        all_region[all_region.current.row + 3, 1].set_format({"num_format": "(0)"})
         overview[1:, 0].autofit()
 
         # Cells 'Title' Range:
@@ -427,6 +425,11 @@ class Dump(Base):
         # Title region: Border Line Style
         title_range.set_format(Props.border)
         overview[0, : all_region.last_cell.col + 1].merge(Props.title)
+
+    @Info("style formatting...")
+    def __gen_sheet_style(self, overview: Sheet, simple: Sheet, counter: Sheet):
+        # 『概观』表单
+        self.__gen_overview_sheet_style(overview=overview)
 
         # 『总览』表单
         # The default font_size is 11
