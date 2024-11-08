@@ -457,7 +457,7 @@ class Dump(Base):
             {"font_name": self.__FONT_NAME, "font_size": 14}
         )
         counter.other_props.update({"font_path": self.__font_path})
-        counter.autofit()
+        counter[1:, :].autofit()
 
         idx_row = 1
         idx_col = find_index(counter.cells[idx_row], "Index")
