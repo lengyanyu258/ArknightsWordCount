@@ -159,7 +159,7 @@ class Count(Parse):
                     if i in basicInfo:
                         info = {
                             "name": basicInfo[i]["name"],
-                            "type": basicInfo[i]["type"],
+                            # "type": basicInfo[i]["type"],
                         }
                     else:
                         info = {}
