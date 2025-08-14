@@ -27,7 +27,7 @@ def manipulate(game: GameData):
         "data": {
             "程序版本": Config.info["version"],
             "数据版本": ".".join(map(lambda x: str(x), game.version)),
-            "数据日期": game.date.isoformat(),
+            # "数据日期": game.date.isoformat(),
             "文档日期": datetime_now.date().isoformat(),
             "文档说明": "https://github.com/lengyanyu258/ArknightsWordCount/wiki",
         },

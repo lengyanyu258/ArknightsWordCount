@@ -77,9 +77,9 @@ class GameData(Count, Dump):
     def version(self) -> tuple[int, ...]:
         return self.__version
 
-    @property
-    def date(self) -> date:
-        return self.__date
+    # @property
+    # def date(self) -> date:
+    #     return self.__date
 
     @property
     def need_update(self) -> bool:
@@ -97,7 +97,7 @@ class GameData(Count, Dump):
 
         content = self.__data_version_path.read_text(encoding="utf-8")
         self.__version = parse_version(content.split(":")[-1].strip())
-        self.__date = date.fromisoformat(content.split()[-2].strip().replace("/", "-"))
+        # self.__date = date.fromisoformat(content.split()[-2].strip().replace("/", "-"))
 
         info_data = self.data["info"]["data"]
         json_data = info_data.copy()
@@ -109,11 +109,11 @@ class GameData(Count, Dump):
             parse_version(info_data.get("数据版本", "0.0.0")),
             parse_version(json_data["info"]["data"]["数据版本"]),
         )
-        old_date = max(
-            date.fromisoformat(info_data.get("数据日期", "2023-09-17")),
-            date.fromisoformat(json_data["info"]["data"]["数据日期"]),
-        )
-        if self.version > old_version or self.date > old_date:
+        # old_date = max(
+        #     date.fromisoformat(info_data.get("数据日期", "2023-09-17")),
+        #     date.fromisoformat(json_data["info"]["data"]["数据日期"]),
+        # )
+        if self.version > old_version:
             self.__need_update = True
 
     @Info("updating story...")
