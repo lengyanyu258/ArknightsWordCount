@@ -27,7 +27,7 @@ runs:
 
         # Optional. Options used by `git-commit`.
         # See https://git-scm.com/docs/git-commit#_options
-        commit_options: "--no-verify --signoff"
+        commit_options: "--no-verify --no-signoff"
 
         # Optional glob pattern of files which should be added to the commit
         # Defaults to all (.)
