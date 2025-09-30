@@ -78,7 +78,14 @@ class Parse(Base):
             except IndexError:
                 return True, "", collections.Counter()
             if control_command == "PopupDialog":
-                head = self.data["excel"]["story_variables"][head.lstrip("$")]
+                try:
+                    head = self.data["excel"]["story_variables"][head.lstrip("$")]
+                except KeyError:
+                    # PopupDialog(dialogHead="char_007_closre_1")
+                    warnings.warn(f"not found {head}")
+                    name = head
+                    if self.__debug and head not in self.__unknown_heads:
+                        self.__unknown_heads.append(head)
             if head.startswith("char"):
                 try:
                     story_text: str = self.data["excel"]["handbook_info_table"][
