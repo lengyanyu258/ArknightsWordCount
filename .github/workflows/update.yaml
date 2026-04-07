@@ -2,8 +2,9 @@ name: Update & Deploy Game Data
 
 on:
   schedule:
-    # UTC time for 08:00 & 16:00 (UTC+8)
-    - cron: "0 0 * * *"
+    # UTC time for 06:00 & 16:00 (UTC+8)
+    # Due to GitHub Actions' resource pressure, we will run it not acctually at that time, but maybe one hour later, which is still acceptable for our use case.
+    - cron: "0 22 * * *"
     - cron: "0 8 * * *"
 
   # Allows you to run this workflow manually from the Actions tab
