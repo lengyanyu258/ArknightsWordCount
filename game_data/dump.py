@@ -298,7 +298,8 @@ class Dump(Base):
             sheet_simple_list.append([])
             sheet_simple_list.append([item_key] + [None] + title_bar)
 
-            if len(item["items"]) > 1:
+            if len(item["items"]) != 1:
+                # 如果不只包含一个关卡，则生成总摘要信息（否则冗余）
                 append_list(None, item["info"])
 
             for k, i in item["items"].items():
@@ -341,27 +342,27 @@ class Dump(Base):
                 gen_story(1, stories[story_name]["items"][level_name])
                 amend_sheet_list(level_list)
                 levels_list.append(level_list)
+
             story_list = merge_sheets_list(levels_list, False)
             sheet_detail_list.append([])  # 空一行
 
-            if len(stories[story_name]["items"]) == 1:
-                # 如果只包含一个关卡，则不生成总摘要信息
-                sheet_detail_list.extend([[story_name]] + story_list)
-                continue
-
             story_digest = [[story_name]]
-            self.__gen_info_data(
-                1,
-                stories[story_name]["info"],
-                story_digest,
-                max_number=len(story_list) - 1,
-            )
-            amend_sheet_list(story_digest)
+
+            if len(stories[story_name]["items"]) != 1:
+                # 如果不只包含一个关卡，则生成总摘要信息（否则冗余）
+                self.__gen_info_data(
+                    1,
+                    stories[story_name]["info"],
+                    story_digest,
+                    max_number=len(story_list) - 1,
+                )
+                amend_sheet_list(story_digest)
+
             sheet_detail_list.extend(
                 merge_sheets_list([story_digest, story_list], False)
             )
 
-    # @Info("gen overview sheet style...")
+    @Info("gen overview sheet style...")
     def __gen_overview_sheet_style(self, overview: Sheet):
         overview.default_format_properties.update(
             {"font_name": self.__FONT_NAME, "font_size": 14}

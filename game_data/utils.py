@@ -1,3 +1,4 @@
+import warnings
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -77,7 +78,12 @@ def merge_sheets_list(
     Returns:
         list[list]: 合并后的单个表单数据
     """
-    sheet_list = sheets[0]
+    try:
+        sheet_list = sheets[0]
+    except IndexError:
+        warnings.warn("no sheet to merge!")
+        return [[]]
+
     for sheet in sheets[1:]:
         len_sheet_bar = len(sheet_list[0])
         for index, bar in enumerate(sheet):
