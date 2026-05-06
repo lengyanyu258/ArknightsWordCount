@@ -22,6 +22,15 @@ runs:
 
     - name: Setup uv
       uses: astral-sh/setup-uv@v8.1.0
+      with:
+        # Whether to restore the cache if found
+        restore-cache: "true"
+
+        # Whether to save the cache after the run
+        save-cache: "true"
+
+        # Upload managed Python installations to the GitHub Actions cache
+        cache-python: "true"
 
     - run: uv sync
       shell: bash

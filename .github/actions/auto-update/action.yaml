@@ -29,7 +29,7 @@ runs:
       with:
         # Optional. Commit message for the created commit.
         # Defaults to "Apply automatic changes"
-        commit_message: "ci(update): AUTO update docs data${{ inputs.is_manual == 'true' && ' manually' || '' }}."
+        commit_message: "ci(update): AUTO update docs data${{ inputs.is_manual == 'true' && ' [manually]' || '' }}."
 
         # Optional. Options used by `git-commit`.
         # See https://git-scm.com/docs/git-commit#_options
