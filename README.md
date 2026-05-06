@@ -10,16 +10,14 @@
 
 ## 使用
 
-需安装 Python 包管理器：[Poetry](https://python-poetry.org/docs/#installation)
+需安装 Python 包管理器：[uv](https://docs.astral.sh/uv/getting-started/installation/)
 
 ```powershell
 git clone --depth=1 "https://github.com/lengyanyu258/ArknightsWordCount.git"
 
 cd ArknightsWordCount
 
-poetry shell
+uv sync
 
-poetry install
-
-python main.py -h
+uv run python main.py -h
 ```

@@ -1,6 +1,12 @@
 name: Proceed to Update & Commit
 description: "下载字体缓存后更新数据并自动提交至仓库"
 
+inputs:
+  is_manual:
+    description: "Whether this workflow was triggered manually (true/false)"
+    required: false
+    default: "false"
+
 runs:
   using: "composite"
   steps:
@@ -15,7 +21,7 @@ runs:
       if: steps.cache-fonts.outputs.cache-hit != 'true'
       uses: ./.github/actions/download-fonts
 
-    - run: poetry run python main.py --all --auto_update --publish
+    - run: uv run python main.py --all --auto_update --publish
       shell: bash
 
     - name: Auto commit to repo.
@@ -23,7 +29,7 @@ runs:
       with:
         # Optional. Commit message for the created commit.
         # Defaults to "Apply automatic changes"
-        commit_message: "ci(update): AUTO update docs data."
+        commit_message: "ci(update): AUTO update docs data${{ inputs.is_manual == 'true' && ' manually' || '' }}."
 
         # Optional. Options used by `git-commit`.
         # See https://git-scm.com/docs/git-commit#_options

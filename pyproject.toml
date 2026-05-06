@@ -1,29 +1,25 @@
-[tool.poetry]
-package-mode = false
+[project]
 name = "arknights-word-count"
-version = "3.13.1"
+version = "4.0.0"
+dependencies = [
+    "pillow>=12.2.0",
+    "tqdm>=4.67.3",
+    "xlsxwriter>=3.2.9",
+    "zhon>=2.1.1",
+]
+requires-python = ">=3.14"
+authors = [{ name = "Shawn Sun", email = "lengyanyu258@outlook.com" }]
 description = "《明日方舟》字词统计"
-authors = ["Shawn Sun <lengyanyu258@outlook.com>"]
-license = "MIT"
 readme = "README.md"
+license = "MIT"
 
-# https://python-poetry.org/docs/dependency-specification/#version-constraints
-[tool.poetry.dependencies]
-python = "~3.11"
-tqdm = "*"
-zhon = "*"
-XlsxWriter = "^3.2.0"
-pillow = "^10.4.0"
+[tool.uv]
+package = false
 
-[tool.poetry.group.dev.dependencies]
-black = "*"
-
-
-[[tool.poetry.source]]
+[[tool.uv.index]]
 name = "tuna"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-priority = "primary"
+default = true
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = ["ruff>=0.15.12"]

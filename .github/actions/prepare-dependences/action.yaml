@@ -20,14 +20,8 @@ runs:
         filter: "blob:none"
         sparse-checkout: "gamedata/"
 
-    - name: Install poetry
-      run: pipx install poetry
-      shell: bash
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v8.1.0
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-        cache: "poetry"
-
-    - run: poetry install
+    - run: uv sync
       shell: bash

@@ -255,7 +255,7 @@ class Dump(Base):
             items["ALL"] = {"info": dic["info"].copy()}
             items["ALL"]["info"].pop("name", None)
 
-        keys = list(items.keys())
+        keys = items.keys()
         sorted_keys = sorted(
             keys,
             key=lambda k: items[k]["info"][sorted_info_key],
@@ -493,12 +493,9 @@ class Dump(Base):
                 {
                     "title": self.data["info"]["title"],
                     "author": "; ".join(
-                        [
-                            re.sub("( ?<.+>)", "", author)
-                            for author in self.data["info"]["authors"]
-                        ]
+                        [author["name"] for author in self.data["info"]["authors"]]
                     ),
-                    "comments": "Created with Python and XlsxWriter",
+                    "comments": f"Created with Python program version {self.data['info']['data']['程序版本']} and XlsxWriter",
                 }
             )
             for k, v in self.data["info"]["data"].items():

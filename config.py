@@ -6,7 +6,7 @@ from typing import Any
 pyproject: dict[str, dict[str, Any]] = tomllib.loads(
     Path(__file__).with_name("pyproject.toml").read_text(encoding="utf-8")
 )
-filename: str = pyproject["tool"]["poetry"]["name"]
+filename: str = pyproject["project"]["name"]
 
 
 class Config:
@@ -15,7 +15,7 @@ class Config:
         r"./Github/ArknightsGameResource/gamedata",
     )
 
-    info: dict[str, Any] = pyproject["tool"]["poetry"]
+    info: dict[str, Any] = pyproject["project"]
     xlsx_file_path = f"./docs/website/{filename}.xlsx"
 
     game_data_config = Namespace(
@@ -72,22 +72,26 @@ class Config:
         output_file_path=game_data_config.pickle_file_path,
         # TODO: use lower case
         known_commands=[
+            "Activity",
             "addfavor",
             "additem",
             "AddItem",
             "animtextclean",
             "avatarId",
+            "avgdisplay",
             "background",
             "Background",
             "backgroundtween",
             "backgroundTween",
             "Backgroundtween",
             "BackgroundTween",
+            "battle",
             "Battle",
             "bgeffect",
             "bgEffect",
             "blocker",
             "Blocker",
+            "cameraeffect",
             "cameraEffect",
             "CameraEffect",
             "camerafocusto",
@@ -107,6 +111,7 @@ class Config:
             "condition",
             "Condition",
             "ConsumeGuideOnStoryEnd",
+            "createeffect",
             "curtain",
             "dalay",
             "daley",
@@ -118,7 +123,9 @@ class Config:
             "DELAY",
             "delay9ti",
             "delayt",
+            "delya",
             "dialo",
+            "Dialogs",
             "duration",
             "effect",
             "Effect",
@@ -127,7 +134,9 @@ class Config:
             "End",
             "executeactionarray",
             "fadetime",
+            "finisheffect",
             "focusout",
+            "focusparam",
             "foginview",
             "fognotinview",
             "gacha",
@@ -145,6 +154,7 @@ class Config:
             "imageTween",
             "ImageTween",
             "imgeffect",
+            "inputblocker",
             "InputBlocker",
             "interlude",
             "largebg",
@@ -161,6 +171,7 @@ class Config:
             "playanim",
             "playmusic",
             "playMusic",
+            "Playmusic",
             "PlayMusic",
             "playsound",
             "playSound",
@@ -171,6 +182,7 @@ class Config:
             "SandboxBattle",
             "save",
             "SetConditionProgress",
+            "setposition",
             "showitem",
             "Showitem",
             "ShowItem",
@@ -178,11 +190,15 @@ class Config:
             "SkipToThis",
             "soundvolume",
             "soundVolume",
+            "Soundvolume",
             "SoundVolume",
+            "spellstickerclear",
             "StartBattle",
             "stickerclear",
+            "Stickerclear",
             "stopmucis",
             "stopmusic",
+            "stopMusic",
             "Stopmusic",
             "StopMusic",
             "stopsound",
@@ -195,10 +211,12 @@ class Config:
             "theater",
             "timerclear",
             "timersticker",
-            "Tutorial",
             "uioperation",
             "verticalbg",
             "Video",
             "withdraw",
+            # "spellsticker", 后续适配
+            # "tutorial", 后续适配
+            # "Tutorial", 后续适配
         ],
     )

@@ -1,7 +1,6 @@
 import json
 import pickle
 from argparse import Namespace
-from datetime import date
 from pathlib import Path
 
 from tqdm import tqdm
@@ -88,7 +87,7 @@ class GameData(Count, Dump):
     @Info("loading...")
     def __load_data(self):
         def parse_version(ver: str):
-            return tuple(map(lambda x: int(x), ver.split(".")))
+            return tuple(int(x) for x in ver.split("."))
 
         if self.__pickle_file.exists():
             self.data = pickle.loads(self.__pickle_file.read_bytes())
