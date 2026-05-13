@@ -32,5 +32,7 @@ runs:
         # Upload managed Python installations to the GitHub Actions cache
         cache-python: "true"
 
-    - run: uv sync
+    - run: uv sync --no-group dev
       shell: bash
+      env:
+        UV_INDEX_URL: https://pypi.org/simple
