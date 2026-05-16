@@ -40,7 +40,7 @@ jobs:
 
       - name: Check if need to update
         id: check_update
-        run: uv run python main.py --all --test_update
+        run: uv run --no-group dev python main.py --all --test_update
 
       - name: Set `need_update` Condition
         id: condition

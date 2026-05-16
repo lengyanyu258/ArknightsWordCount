@@ -23,6 +23,9 @@ runs:
     - name: Setup uv
       uses: astral-sh/setup-uv@v8.1.0
       with:
+        # Enable uploading of the uv cache: true, false, or auto (enabled on GitHub-hosted runners, disabled on self-hosted runners)
+        enable-cache: "true"
+
         # Whether to restore the cache if found
         restore-cache: "true"
 

@@ -21,7 +21,7 @@ runs:
       if: steps.cache-fonts.outputs.cache-hit != 'true'
       uses: ./.github/actions/download-fonts
 
-    - run: uv run python main.py --all --auto_update --publish
+    - run: uv run --no-group dev python main.py --all --auto_update --publish
       shell: bash
 
     - name: Auto commit to repo.
