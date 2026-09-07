@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
-from logging import warn
+from logging import warning
 from typing import Any, Optional, SupportsIndex
 
 from PIL import ImageFont
@@ -364,7 +362,7 @@ class Range:
                 "font_path" not in self.sheet.other_props
                 or font_name not in self.sheet.other_props["font_path"]
             ):
-                warn("Failed: Not found font path!")
+                warning("Failed: Not found font path!")
                 return
 
             font_path: dict[str, str] = self.sheet.other_props["font_path"][font_name]
