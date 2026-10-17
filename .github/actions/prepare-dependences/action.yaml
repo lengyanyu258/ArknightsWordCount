@@ -35,8 +35,7 @@ runs:
         # Upload managed Python installations to the GitHub Actions cache
         cache-python: "true"
 
-    - run: uv sync --no-group dev --default-index https://pypi.org/simple
+    - name: Sync dependencies
+      # Update mirror URLs in uv.lock to the workflow's PyPI index, then install.
+      run: uv sync --no-group dev
       shell: bash
-      env:
-        # GitHub Actions must use the canonical PyPI index even when local config prefers a mirror.
-        UV_DEFAULT_INDEX: https://pypi.org/simple

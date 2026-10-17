@@ -10,6 +10,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  # Override the local default mirror for every uv command in both jobs.
+  UV_DEFAULT_INDEX: https://pypi.org/simple
+
 # Global permissions configuration starts here
 permissions:
   # 'write' access to repository contents
@@ -40,7 +44,7 @@ jobs:
 
       - name: Check if need to update
         id: check_update
-        run: uv run --no-group dev python main.py --all --test_update
+        run: uv run --locked --no-group dev python main.py --all --test_update
 
       - name: Set `need_update` Condition
         id: condition
